@@ -11,16 +11,67 @@ namespace Server
     {
         private const int portTCP = 9090;
 
-        private static ServiceTCPSockets tcpServer = new ServiceTCPSockets(portTCP);
+        private const string userTemp = "admin";
+
+        private const string passTemp = "admin";
 
         static void Main(string[] args)
         {
-            if(tcpServer.StartConnection())
+            Console.WriteLine("Press any key to start server.");
+            Console.ReadKey();
+
+            ServiceTCPSockets.StartServer(portTCP);
+
+            Console.WriteLine("Press any key to start listening for connections.");
+            Console.ReadKey();
+
+            ServiceTCPSockets.StartConnection();
+
+            while(true)
             {
-                if(tcpServer.AcceptConnection())
+                ServiceTCPSockets.AcceptConnection();
+
+                string requestClient = ServiceTCPSockets.GetClientMessage();
+
+                switch (requestClient)
                 {
-                    tcpServer.GetClientMessage();
+                    case "Login":
+
+                        string userCliente = ServiceTCPSockets.GetClientMessage();
+                        string passHashCliente = ServiceTCPSockets.GetClientMessage();
+
+                        if (userCliente == userTemp && passHashCliente == passTemp)
+                        {
+                            ServiceTCPSockets.SendFeedback("OK");
+                        }
+
+                        else
+                        {
+                            ServiceTCPSockets.SendFeedback("KO");
+                        }
+                            
+                        break;
+
+                    case "GetFileList":
+
+
+
+                        break;
+
+                    case "GetSelectedFile":
+
+
+
+                        break;
+
+                    default:
+
+                        ServiceTCPSockets.SendFeedback("O servidor não reconheceu o pedido.");
+
+                        break;
                 }
+
+
             }
         }
     }

@@ -10,18 +10,13 @@ namespace Server
 {
     public class ServiceTCPSockets
     {
-        private int bytesRead;
+        private static int bytesRead;
 
-        private TcpListener tcpListener = null;
-        private TcpClient tcpClient = null;
-        private NetworkStream networkStream = null;
+        private static TcpListener tcpListener = null;
+        private static TcpClient tcpClient = null;
+        private static NetworkStream networkStream = null;
 
-        public ServiceTCPSockets(int port)
-        {
-            StartServer(port);
-        }
-
-        private void StartServer(int port)
+        public static void StartServer(int port)
         {
             try
             {
@@ -37,21 +32,12 @@ namespace Server
 
         }
 
-        public bool StartConnection()
+        public static void StartConnection()
         {
             try
             {
-                bool encontrouLigacao = false;
-
                 tcpListener.Start();
                 Console.WriteLine("Waiting for connections ...");
-
-                if(tcpListener.Pending())
-                {
-                    encontrouLigacao = true;
-                }
-
-                return encontrouLigacao;
             }
             catch (Exception)
             {
@@ -59,23 +45,14 @@ namespace Server
             }
         }
 
-        public bool AcceptConnection()
+        public static void AcceptConnection()
         {
             try
             {
-                bool mensagemRecebida = false;
-
                 tcpClient = tcpListener.AcceptTcpClient();
                 networkStream = tcpClient.GetStream();
                 Console.WriteLine("Connection Successful!");
                 Console.WriteLine("Waiting for message ...");
-
-                if(networkStream.DataAvailable == true)
-                {
-                    mensagemRecebida = true;
-                }
-
-                return mensagemRecebida;
             }
             catch (Exception)
             {
@@ -83,7 +60,7 @@ namespace Server
             }
         }
 
-        public void GetClientMessage()
+        public static string GetClientMessage()
         {
             try
             {
@@ -91,7 +68,10 @@ namespace Server
                 byte[] bytesMensagemBuffer = new byte[bytesMensagemBufferSize];
 
                 bytesRead = networkStream.Read(bytesMensagemBuffer, 0, bytesMensagemBufferSize);
-                Console.WriteLine("Message Received!", Encoding.UTF8.GetString(bytesMensagemBuffer, 0, bytesRead));
+                string mensagemCliente = Encoding.UTF8.GetString(bytesMensagemBuffer, 0, bytesRead);
+                Console.WriteLine("Client: ", mensagemCliente);
+
+                return mensagemCliente;
             }
             catch (Exception)
             {
@@ -99,7 +79,7 @@ namespace Server
             }
         }
 
-        public void SendFeedback(string mensagemFeedback)
+        public static void SendFeedback(string mensagemFeedback)
         {
             try
             {
@@ -112,6 +92,13 @@ namespace Server
             {
                 throw;
             }
+        }
+
+        public static void StopServer()
+        {
+            networkStream.Close();
+            tcpClient.Close();
+            tcpListener.Stop();
         }
     }
 }
