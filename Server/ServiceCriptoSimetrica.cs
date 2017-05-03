@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    class Encriptacao
+    class ServiceCriptoSimetrica
     {
         //Encriptação simétrica, utilizando chaves.
         //RSA --> Assimétrica
