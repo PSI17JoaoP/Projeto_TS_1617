@@ -29,17 +29,17 @@
         private void InitializeComponent()
         {
             this.gbLogin = new System.Windows.Forms.GroupBox();
-            this.gbMenu = new System.Windows.Forms.GroupBox();
-            this.label1 = new System.Windows.Forms.Label();
-            this.label2 = new System.Windows.Forms.Label();
-            this.txtUtilizador = new System.Windows.Forms.TextBox();
-            this.txtPassword = new System.Windows.Forms.TextBox();
             this.btnLogin = new System.Windows.Forms.Button();
-            this.lvLista = new System.Windows.Forms.ListView();
-            this.label3 = new System.Windows.Forms.Label();
-            this.btnObterLista = new System.Windows.Forms.Button();
-            this.btnObterFicheiro = new System.Windows.Forms.Button();
+            this.txtPassword = new System.Windows.Forms.TextBox();
+            this.txtUtilizador = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.gbMenu = new System.Windows.Forms.GroupBox();
             this.btnAbrirFicheiro = new System.Windows.Forms.Button();
+            this.btnObterFicheiro = new System.Windows.Forms.Button();
+            this.btnObterLista = new System.Windows.Forms.Button();
+            this.label3 = new System.Windows.Forms.Label();
+            this.lvLista = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.gbLogin.SuspendLayout();
@@ -62,6 +62,49 @@
             this.gbLogin.TabStop = false;
             this.gbLogin.Text = "Login";
             // 
+            // btnLogin
+            // 
+            this.btnLogin.Location = new System.Drawing.Point(194, 138);
+            this.btnLogin.Name = "btnLogin";
+            this.btnLogin.Size = new System.Drawing.Size(81, 30);
+            this.btnLogin.TabIndex = 4;
+            this.btnLogin.Text = "Entrar";
+            this.btnLogin.UseVisualStyleBackColor = true;
+            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
+            // 
+            // txtPassword
+            // 
+            this.txtPassword.Location = new System.Drawing.Point(101, 89);
+            this.txtPassword.Name = "txtPassword";
+            this.txtPassword.Size = new System.Drawing.Size(174, 24);
+            this.txtPassword.TabIndex = 3;
+            this.txtPassword.UseSystemPasswordChar = true;
+            // 
+            // txtUtilizador
+            // 
+            this.txtUtilizador.Location = new System.Drawing.Point(101, 48);
+            this.txtUtilizador.Name = "txtUtilizador";
+            this.txtUtilizador.Size = new System.Drawing.Size(174, 24);
+            this.txtUtilizador.TabIndex = 2;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 92);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(75, 18);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "Password";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 51);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(70, 18);
+            this.label1.TabIndex = 0;
+            this.label1.Text = "Utilizador";
+            // 
             // gbMenu
             // 
             this.gbMenu.Controls.Add(this.btnAbrirFicheiro);
@@ -78,48 +121,41 @@
             this.gbMenu.Text = "Menu";
             this.gbMenu.Visible = false;
             // 
-            // label1
+            // btnAbrirFicheiro
             // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 51);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(70, 18);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "Utilizador";
+            this.btnAbrirFicheiro.Location = new System.Drawing.Point(149, 165);
+            this.btnAbrirFicheiro.Name = "btnAbrirFicheiro";
+            this.btnAbrirFicheiro.Size = new System.Drawing.Size(126, 39);
+            this.btnAbrirFicheiro.TabIndex = 4;
+            this.btnAbrirFicheiro.Text = "Abrir ficheiro";
+            this.btnAbrirFicheiro.UseVisualStyleBackColor = true;
             // 
-            // label2
+            // btnObterFicheiro
             // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 92);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(75, 18);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "Password";
+            this.btnObterFicheiro.Location = new System.Drawing.Point(15, 165);
+            this.btnObterFicheiro.Name = "btnObterFicheiro";
+            this.btnObterFicheiro.Size = new System.Drawing.Size(126, 39);
+            this.btnObterFicheiro.TabIndex = 3;
+            this.btnObterFicheiro.Text = "Obter ficheiro";
+            this.btnObterFicheiro.UseVisualStyleBackColor = true;
             // 
-            // txtUtilizador
+            // btnObterLista
             // 
-            this.txtUtilizador.Location = new System.Drawing.Point(101, 48);
-            this.txtUtilizador.Name = "txtUtilizador";
-            this.txtUtilizador.Size = new System.Drawing.Size(174, 24);
-            this.txtUtilizador.TabIndex = 2;
+            this.btnObterLista.Location = new System.Drawing.Point(182, 21);
+            this.btnObterLista.Name = "btnObterLista";
+            this.btnObterLista.Size = new System.Drawing.Size(93, 36);
+            this.btnObterLista.TabIndex = 2;
+            this.btnObterLista.Text = "Obter lista";
+            this.btnObterLista.UseVisualStyleBackColor = true;
             // 
-            // txtPassword
+            // label3
             // 
-            this.txtPassword.Location = new System.Drawing.Point(101, 89);
-            this.txtPassword.Name = "txtPassword";
-            this.txtPassword.Size = new System.Drawing.Size(174, 24);
-            this.txtPassword.TabIndex = 3;
-            this.txtPassword.UseSystemPasswordChar = true;
-            // 
-            // btnLogin
-            // 
-            this.btnLogin.Location = new System.Drawing.Point(194, 138);
-            this.btnLogin.Name = "btnLogin";
-            this.btnLogin.Size = new System.Drawing.Size(81, 30);
-            this.btnLogin.TabIndex = 4;
-            this.btnLogin.Text = "Entrar";
-            this.btnLogin.UseVisualStyleBackColor = true;
-            this.btnLogin.Click += new System.EventHandler(this.btnLogin_Click);
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(12, 40);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(115, 17);
+            this.label3.TabIndex = 1;
+            this.label3.Text = "Lista de ficheiros";
             // 
             // lvLista
             // 
@@ -133,42 +169,6 @@
             this.lvLista.TabIndex = 0;
             this.lvLista.UseCompatibleStateImageBehavior = false;
             this.lvLista.View = System.Windows.Forms.View.Details;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 40);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(115, 17);
-            this.label3.TabIndex = 1;
-            this.label3.Text = "Lista de ficheiros";
-            // 
-            // btnObterLista
-            // 
-            this.btnObterLista.Location = new System.Drawing.Point(182, 21);
-            this.btnObterLista.Name = "btnObterLista";
-            this.btnObterLista.Size = new System.Drawing.Size(93, 36);
-            this.btnObterLista.TabIndex = 2;
-            this.btnObterLista.Text = "Obter lista";
-            this.btnObterLista.UseVisualStyleBackColor = true;
-            // 
-            // btnObterFicheiro
-            // 
-            this.btnObterFicheiro.Location = new System.Drawing.Point(15, 165);
-            this.btnObterFicheiro.Name = "btnObterFicheiro";
-            this.btnObterFicheiro.Size = new System.Drawing.Size(126, 39);
-            this.btnObterFicheiro.TabIndex = 3;
-            this.btnObterFicheiro.Text = "Obter ficheiro";
-            this.btnObterFicheiro.UseVisualStyleBackColor = true;
-            // 
-            // btnAbrirFicheiro
-            // 
-            this.btnAbrirFicheiro.Location = new System.Drawing.Point(149, 165);
-            this.btnAbrirFicheiro.Name = "btnAbrirFicheiro";
-            this.btnAbrirFicheiro.Size = new System.Drawing.Size(126, 39);
-            this.btnAbrirFicheiro.TabIndex = 4;
-            this.btnAbrirFicheiro.Text = "Abrir ficheiro";
-            this.btnAbrirFicheiro.UseVisualStyleBackColor = true;
             // 
             // columnHeader1
             // 

@@ -32,10 +32,10 @@ namespace Projeto
             byte[] dados;
             byte[] hash;
 
-            using (SHA1 sha1 = SHA1.Create())
+            using (SHA512 sha512 = SHA512.Create())
             {
                 dados = Encoding.UTF8.GetBytes(texto);
-                hash = sha1.ComputeHash(dados);
+                hash = sha512.ComputeHash(dados);
             }
 
             return hash;
@@ -57,7 +57,7 @@ namespace Projeto
             byte[] assinatura = Convert.FromBase64String(assinaturaS);
             bool result;
 
-            result = rsa.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA1"), assinatura);
+            result = rsa.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA512"), assinatura);
 
             return result;
         }
@@ -68,9 +68,9 @@ namespace Projeto
             byte[] assinatura = Convert.FromBase64String(assinaturaS);
             bool result;
 
-            using (SHA1 sha1 = SHA1.Create())
+            using (SHA512 sha512 = SHA512.Create())
             {
-                result = rsa.VerifyData(dados, sha1, assinatura);
+                result = rsa.VerifyData(dados, sha512, assinatura);
             }
 
             return result;
