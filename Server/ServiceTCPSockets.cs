@@ -20,42 +20,82 @@ namespace Server
 
         public static void StartServer()
         {
-            Console.WriteLine("Starting Server ...");
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, PORT);
-            tcpListener = new TcpListener(endPoint);
-            Console.WriteLine("Server Ready!");
+            try
+            {
+                Console.WriteLine("Starting Server ...");
+                IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, PORT);
+                tcpListener = new TcpListener(endPoint);
+                Console.WriteLine("Server Ready!");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
         }
 
         public static void StartListener()
         {
-            tcpListener.Start();
-            Console.WriteLine("Waiting for connections ...");
+            try
+            {
+                tcpListener.Start();
+                Console.WriteLine("Waiting for connections ...");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public static void AcceptConnection()
         {
-            tcpClient = tcpListener.AcceptTcpClient();
-            networkStream = tcpClient.GetStream();
-            Console.WriteLine("Connection Successful!");
-            Console.WriteLine("Waiting for message ...");
+            try
+            {
+                tcpClient = tcpListener.AcceptTcpClient();
+                networkStream = tcpClient.GetStream();
+                Console.WriteLine("Connection Successful!");
+                Console.WriteLine("Waiting for message ...");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public static void GetClientMessage()
         {
-            int bytesMensagemBufferSize = tcpClient.ReceiveBufferSize;
-            byte[] bytesMensagemBuffer = new byte[bytesMensagemBufferSize];
+            try
+            {
+                int bytesMensagemBufferSize = tcpClient.ReceiveBufferSize;
+                byte[] bytesMensagemBuffer = new byte[bytesMensagemBufferSize];
 
-            bytesRead = networkStream.Read(bytesMensagemBuffer, 0, bytesMensagemBufferSize);
-            Console.WriteLine("Message Received!", Encoding.UTF8.GetString(bytesMensagemBuffer, 0, bytesRead));
+                bytesRead = networkStream.Read(bytesMensagemBuffer, 0, bytesMensagemBufferSize);
+                Console.WriteLine("Message Received!", Encoding.UTF8.GetString(bytesMensagemBuffer, 0, bytesRead));
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
-        public static void SendFeedback()
+        public static void SendFeedback(string mensagemFeedback)
         {
-            string mensagemFeedback = "Server here. How are you Client?";
-            byte[] bytesMensagemFeedback = Encoding.UTF8.GetBytes(mensagemFeedback);
+            try
+            {
+                byte[] bytesMensagemFeedback = Encoding.UTF8.GetBytes(mensagemFeedback);
 
-            networkStream.Write(bytesMensagemFeedback, 0, bytesMensagemFeedback.Length);
-            Console.WriteLine("Feedback Sent!");
+                networkStream.Write(bytesMensagemFeedback, 0, bytesMensagemFeedback.Length);
+                Console.WriteLine("Feedback Sent!");
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
     }
 }
