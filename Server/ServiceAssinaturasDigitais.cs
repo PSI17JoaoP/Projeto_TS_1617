@@ -23,10 +23,10 @@ namespace Server
         {
             string hashDadosString;
 
-            using (SHA1 sha1Algorithm = SHA1.Create())
+            using (SHA512 sha512Algorithm = SHA512.Create())
             {
                 byte[] dadosBytes = Encoding.UTF8.GetBytes(dadosBrutos);
-                byte[] hashDados = sha1Algorithm.ComputeHash(dadosBytes);
+                byte[] hashDados = sha512Algorithm.ComputeHash(dadosBytes);
 
                 hashDadosString = Convert.ToBase64String(hashDados);
             }
@@ -39,7 +39,7 @@ namespace Server
             string assinaturaHash;
 
             byte[] hashBytes = Convert.FromBase64String(hashString);
-            byte[] signatureBytes = rsaSign.SignHash(hashBytes, CryptoConfig.MapNameToOID("SHA1"));
+            byte[] signatureBytes = rsaSign.SignHash(hashBytes, CryptoConfig.MapNameToOID("SHA512"));
 
             assinaturaHash = Convert.ToBase64String(signatureBytes);
 
@@ -52,9 +52,9 @@ namespace Server
 
             byte[] dadosBytes = Encoding.UTF8.GetBytes(dadosBrutos);
 
-            using (SHA1 sha1Algorithm = SHA1.Create())
+            using (SHA512 sha512Algorithm = SHA512.Create())
             {
-                byte[] signatureDados = rsaSign.SignData(dadosBytes, sha1Algorithm);
+                byte[] signatureDados = rsaSign.SignData(dadosBytes, sha512Algorithm);
                 assinaturaDados = Convert.ToBase64String(signatureDados);
             }
 

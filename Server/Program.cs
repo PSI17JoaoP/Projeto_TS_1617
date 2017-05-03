@@ -10,7 +10,6 @@ namespace Server
     {
         static void Main(string[] args)
         {
-
         }
     }
 }
