@@ -8,64 +8,82 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    class ServiceTCPSockets
+    public class ServiceTCPSockets
     {
-        private const int PORT = 9090;
+        private int bytesRead;
 
-        private static int bytesRead;
+        private TcpListener tcpListener = null;
+        private TcpClient tcpClient = null;
+        private NetworkStream networkStream = null;
 
-        private static TcpListener tcpListener = null;
-        private static TcpClient tcpClient = null;
-        private static NetworkStream networkStream = null;
+        public ServiceTCPSockets(int port)
+        {
+            StartServer(port);
+        }
 
-        public static void StartServer()
+        private void StartServer(int port)
         {
             try
             {
                 Console.WriteLine("Starting Server ...");
-                IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, PORT);
+                IPEndPoint endPoint = new IPEndPoint(IPAddress.Loopback, port);
                 tcpListener = new TcpListener(endPoint);
                 Console.WriteLine("Server Ready!");
             }
             catch (Exception)
             {
-
                 throw;
             }
 
         }
 
-        public static void StartListener()
+        public bool StartConnection()
         {
             try
             {
+                bool encontrouLigacao = false;
+
                 tcpListener.Start();
                 Console.WriteLine("Waiting for connections ...");
+
+                if(tcpListener.Pending())
+                {
+                    encontrouLigacao = true;
+                }
+
+                return encontrouLigacao;
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
 
-        public static void AcceptConnection()
+        public bool AcceptConnection()
         {
             try
             {
+                bool mensagemRecebida = false;
+
                 tcpClient = tcpListener.AcceptTcpClient();
                 networkStream = tcpClient.GetStream();
                 Console.WriteLine("Connection Successful!");
                 Console.WriteLine("Waiting for message ...");
+
+                if(networkStream.DataAvailable == true)
+                {
+                    mensagemRecebida = true;
+                }
+
+                return mensagemRecebida;
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
 
-        public static void GetClientMessage()
+        public void GetClientMessage()
         {
             try
             {
@@ -77,12 +95,11 @@ namespace Server
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
 
-        public static void SendFeedback(string mensagemFeedback)
+        public void SendFeedback(string mensagemFeedback)
         {
             try
             {
@@ -93,7 +110,6 @@ namespace Server
             }
             catch (Exception)
             {
-
                 throw;
             }
         }
