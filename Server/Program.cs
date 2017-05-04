@@ -15,52 +15,46 @@ namespace Server
 
         private const string passTemp = "admin";
 
+        private static ServiceTCPSockets serverTCP = new ServiceTCPSockets(portTCP);
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Press any key to start server.");
-            Console.ReadKey();
-
-            ServiceTCPSockets.StartServer(portTCP);
-
-            Console.WriteLine("Press any key to start listening for connections.");
-            Console.ReadKey();
-
-            ServiceTCPSockets.StartConnection();
+            serverTCP.StartConnection();
 
             bool loopServer = true;
             bool loopCliente = true;
 
             while(loopServer)
             {
-                ServiceTCPSockets.AcceptConnection();
+                serverTCP.AcceptConnection();
 
                 while (loopCliente)
                 {
-                    string requestClient = ServiceTCPSockets.GetClientMessage();
+                    string requestClient = serverTCP.GetClientMessage();                
 
                     switch (requestClient)
                     {
                         case "Login":
 
-                            string userCliente = ServiceTCPSockets.GetClientMessage();
-                            string passHashCliente = ServiceTCPSockets.GetClientMessage();
+                            string userCliente = serverTCP.GetClientMessage();
+                            string passHashCliente = serverTCP.GetClientMessage();
 
                             if(userCliente != "ERROR" && passHashCliente != "ERROR")
                             {
                                 if (userCliente == userTemp && passHashCliente == passTemp)
                                 {
-                                    ServiceTCPSockets.SendFeedback("OK");
+                                    serverTCP.SendFeedback("OK");
                                 }
 
                                 else
                                 {
-                                    ServiceTCPSockets.SendFeedback("KO");
+                                    serverTCP.SendFeedback("KO");
                                 }
                             }
 
                             else
                             {
-                                ServiceTCPSockets.StopServer();
+                                serverTCP.StopServer();
                                 loopCliente = false;
                                 loopServer = false;
                             }
@@ -81,7 +75,7 @@ namespace Server
 
                         default:
 
-                            ServiceTCPSockets.SendFeedback("O servidor não reconheceu o pedido.");
+                            serverTCP.SendFeedback("O servidor não reconheceu o pedido.");
 
                             break;
                     }

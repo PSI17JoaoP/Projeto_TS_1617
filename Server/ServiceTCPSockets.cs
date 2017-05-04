@@ -10,13 +10,18 @@ namespace Server
 {
     public class ServiceTCPSockets
     {
-        private static int bytesRead;
+        private int bytesRead;
 
-        private static TcpListener tcpListener = null;
-        private static TcpClient tcpClient = null;
-        private static NetworkStream networkStream = null;
+        private TcpListener tcpListener = null;
+        private TcpClient tcpClient = null;
+        private NetworkStream networkStream = null;
 
-        public static void StartServer(int port)
+        public ServiceTCPSockets(int Port)
+        {
+            StartServer(Port);
+        }
+
+        private void StartServer(int port)
         {
             try
             {
@@ -32,7 +37,7 @@ namespace Server
 
         }
 
-        public static void StartConnection()
+        public void StartConnection()
         {
             try
             {
@@ -45,7 +50,7 @@ namespace Server
             }
         }
 
-        public static void AcceptConnection()
+        public void AcceptConnection()
         {
             try
             {
@@ -60,7 +65,7 @@ namespace Server
             }
         }
 
-        public static string GetClientMessage()
+        public string GetClientMessage()
         {
             try
             {
@@ -82,7 +87,7 @@ namespace Server
             }
         }
 
-        public static void SendFeedback(string mensagemFeedback)
+        public void SendFeedback(string mensagemFeedback)
         {
             try
             {
@@ -97,7 +102,7 @@ namespace Server
             }
         }
 
-        public static void StopServer()
+        public void StopServer()
         {
             if(networkStream == null)
             {
