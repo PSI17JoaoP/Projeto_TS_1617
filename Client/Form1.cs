@@ -28,6 +28,8 @@ namespace Projeto
             {
                 ServiceTCPSockets.StartConnection();
 
+                ServiceTCPSockets.SendMessage("Login");
+
                 string nome = txtUtilizador.Text;
                 string pass = txtPassword.Text;
 
