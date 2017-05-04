@@ -32,6 +32,7 @@ namespace Server
                 ServiceTCPSockets.AcceptConnection();
 
                 string requestClient = ServiceTCPSockets.GetClientMessage();
+                Console.WriteLine(requestClient);
 
                 switch (requestClient)
                 {
