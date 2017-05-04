@@ -27,51 +27,65 @@ namespace Server
 
             ServiceTCPSockets.StartConnection();
 
-            while(true)
+            bool loopServer = true;
+            bool loopCliente = true;
+
+            while(loopServer)
             {
                 ServiceTCPSockets.AcceptConnection();
 
-                string requestClient = ServiceTCPSockets.GetClientMessage();
-
-                switch (requestClient)
+                while (loopCliente)
                 {
-                    case "Login":
+                    string requestClient = ServiceTCPSockets.GetClientMessage();
 
-                        string userCliente = ServiceTCPSockets.GetClientMessage();
-                        string passHashCliente = ServiceTCPSockets.GetClientMessage();
+                    switch (requestClient)
+                    {
+                        case "Login":
 
-                        if (userCliente == userTemp && passHashCliente == passTemp)
-                        {
-                            ServiceTCPSockets.SendFeedback("OK");
-                        }
+                            string userCliente = ServiceTCPSockets.GetClientMessage();
+                            string passHashCliente = ServiceTCPSockets.GetClientMessage();
 
-                        else
-                        {
-                            ServiceTCPSockets.SendFeedback("KO");
-                        }
-                            
-                        break;
+                            if(userCliente != "ERROR" && passHashCliente != "ERROR")
+                            {
+                                if (userCliente == userTemp && passHashCliente == passTemp)
+                                {
+                                    ServiceTCPSockets.SendFeedback("OK");
+                                }
 
-                    case "GetFileList":
+                                else
+                                {
+                                    ServiceTCPSockets.SendFeedback("KO");
+                                }
+                            }
+
+                            else
+                            {
+                                ServiceTCPSockets.StopServer();
+                                loopCliente = false;
+                                loopServer = false;
+                            }
+
+                            break;
+
+                        case "GetFileList":
 
 
 
-                        break;
+                            break;
 
-                    case "GetSelectedFile":
+                        case "GetSelectedFile":
 
 
 
-                        break;
+                            break;
 
-                    default:
+                        default:
 
-                        ServiceTCPSockets.SendFeedback("O servidor não reconheceu o pedido.");
+                            ServiceTCPSockets.SendFeedback("O servidor não reconheceu o pedido.");
 
-                        break;
+                            break;
+                    }
                 }
-
-
             }
         }
     }

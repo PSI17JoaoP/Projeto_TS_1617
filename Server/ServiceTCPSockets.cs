@@ -27,7 +27,7 @@ namespace Server
             }
             catch (Exception)
             {
-                throw;
+                StopServer();
             }
 
         }
@@ -41,7 +41,7 @@ namespace Server
             }
             catch (Exception)
             {
-                throw;
+                StopServer();
             }
         }
 
@@ -56,7 +56,7 @@ namespace Server
             }
             catch (Exception)
             {
-                throw;
+                StopServer();
             }
         }
 
@@ -73,9 +73,12 @@ namespace Server
 
                 return mensagemCliente;
             }
+
             catch (Exception)
             {
-                throw;
+                StopServer();
+
+                return "ERROR";
             }
         }
 
@@ -90,15 +93,26 @@ namespace Server
             }
             catch (Exception)
             {
-                throw;
+                StopServer();
             }
         }
 
         public static void StopServer()
         {
-            networkStream.Close();
-            tcpClient.Close();
-            tcpListener.Stop();
+            if(networkStream == null)
+            {
+                networkStream.Close();
+            }
+
+            if (tcpClient == null)
+            {
+                tcpClient.Close();
+            }
+
+            if (tcpListener == null)
+            {
+                tcpListener.Stop();
+            }
         }
     }
 }
