@@ -30,21 +30,29 @@ namespace Projeto
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            tcpClient = new TcpClient();
-            endPoint = new IPEndPoint(IPAddress.Loopback, port);
+            try
+            {
+                tcpClient = new TcpClient();
+                endPoint = new IPEndPoint(IPAddress.Loopback, port);
 
-            tcpClient.Connect(endPoint);
-            networkStream = tcpClient.GetStream();
+                tcpClient.Connect(endPoint);
+                networkStream = tcpClient.GetStream();
+            }
+
+            catch (Exception)
+            {
+                StopConnection();
+            }
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
             try
             {
-                int bytesRead;
+                int bytesRead = 0;
                 byte[] usernameLogin = Encoding.UTF8.GetBytes(txtUtilizador.Text.Trim());
                 byte[] passwordHashLogin = Encoding.UTF8.GetBytes(txtPassword.Text);
-                string serverFeedback;
+                string serverFeedback = null;
 
                 networkStream.Write(usernameLogin, 0, usernameLogin.Length);
 
@@ -68,7 +76,7 @@ namespace Projeto
                 }
             }
 
-            catch
+            catch (Exception)
             {
                 StopConnection();
             }
@@ -81,11 +89,11 @@ namespace Projeto
                 byte[] requestList = Encoding.UTF8.GetBytes("GETLIST");
                 networkStream.Write(requestList, 0, requestList.Length);
 
-                int fileListBufferSize;
-                byte[] fileListBuffer;
-                string fileList;
+                int fileListBufferSize = 0;
+                byte[] fileListBuffer = null;
+                string fileList = null;
 
-                int bytesRead;
+                int bytesRead = 0;
 
                 do
                 {
@@ -94,23 +102,25 @@ namespace Projeto
 
                     bytesRead = networkStream.Read(fileListBuffer, 0, fileListBufferSize);
                     fileList = Encoding.UTF8.GetString(fileListBuffer, 0, bytesRead);
-                    AddFilesToList(fileList, bytesRead);
                 }
                 while (networkStream.DataAvailable);
 
+                RefreshFileList(fileList, bytesRead);
             }
 
-            catch
+            catch (Exception)
             {
                 StopConnection();
             }
         }
 
-        private void AddFilesToList(string fileNameList, int fileListSize)
+        private void RefreshFileList(string fileNameList, int fileNameListSize)
         {
-            string fileName;
+            string fileName = null;
             int indexStart = 0;
             int indexEnd = 0;
+
+            lvLista.Items.Clear();
 
             do
             {
@@ -121,41 +131,49 @@ namespace Projeto
 
                 lvLista.Items.Add(fileName);
             }
-            while (indexStart != fileListSize);
+            while (indexStart != fileNameListSize);
 
         }
 
         private void btnObterFicheiro_Click(object sender, EventArgs e)
         {
-            string fileRequest = lvLista.SelectedItems[0].Text;
-
-            byte[] requestList = Encoding.UTF8.GetBytes("GETFILE");
-            networkStream.Write(requestList, 0, requestList.Length);
-
-            byte[] fileRequested = Encoding.UTF8.GetBytes(fileRequest);
-            networkStream.Write(fileRequested, 0, fileRequested.Length);
-
-            if (File.Exists(fileRequest))
+            try
             {
-                File.Delete(fileRequest);
+                string fileRequest = lvLista.SelectedItems[0].Text;
+
+                byte[] requestList = Encoding.UTF8.GetBytes("GETFILE");
+                networkStream.Write(requestList, 0, requestList.Length);
+
+                byte[] fileRequested = Encoding.UTF8.GetBytes(fileRequest);
+                networkStream.Write(fileRequested, 0, fileRequested.Length);
+
+                if (File.Exists(fileRequest))
+                {
+                    File.Delete(fileRequest);
+                }
+
+                using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.Write))
+                {
+                    byte[] fileBuffer = null;
+                    int fileBufferSize = 0;
+
+                    int bytesRead = 0;
+
+                    do
+                    {
+                        fileBufferSize = tcpClient.ReceiveBufferSize;
+                        fileBuffer = new byte[fileBufferSize];
+
+                        bytesRead = networkStream.Read(fileBuffer, 0, fileBufferSize);
+                        fileStream.Write(fileBuffer, 0, bytesRead);
+                    }
+                    while (networkStream.DataAvailable);
+                }
             }
 
-            using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew))
+            catch (Exception)
             {
-                byte[] fileBuffer;
-                int fileBufferSize;
-
-                int bytesRead;
-
-                do
-                {
-                    fileBufferSize = tcpClient.ReceiveBufferSize;
-                    fileBuffer = new byte[fileBufferSize];
-
-                    bytesRead = networkStream.Read(fileBuffer, 0, fileBufferSize);
-                    fileStream.Write(fileBuffer, 0, bytesRead);
-                }
-                while (networkStream.DataAvailable);
+                StopConnection();
             }
         }
 

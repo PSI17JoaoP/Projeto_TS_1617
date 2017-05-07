@@ -19,17 +19,15 @@ namespace Server
 
         private static string fileListPath = Path.Combine(Environment.CurrentDirectory, @"Files\");
 
-        //private static ServiceTCPSockets serverTCP = new ServiceTCPSockets(portTCP);
-
         private static TcpListener tcpListener = null;
         private static TcpClient tcpClient = null;
         private static NetworkStream networkStream = null;
 
         static void Main(string[] args)
         {
-            int requestBufferSize;
-            byte[] requestBuffer;
-            string requestClient;
+            int requestBufferSize = 0;
+            byte[] requestBuffer = null;
+            string requestClient = null;
 
             int bytesRead;
 
@@ -38,32 +36,41 @@ namespace Server
 
             while (true)
             {
-                requestBufferSize = tcpClient.ReceiveBufferSize;
-                requestBuffer = new byte[requestBufferSize];
-
-                bytesRead = networkStream.Read(requestBuffer, 0, requestBufferSize);
-                requestClient = Encoding.UTF8.GetString(requestBuffer, 0, bytesRead);
-                Console.WriteLine("Client Request ->" + requestClient);
-
-                if (requestClient == "GETLIST")
+                if (tcpClient.Connected)
                 {
-                    ServerSendList();
+                    requestBufferSize = tcpClient.ReceiveBufferSize;
+                    requestBuffer = new byte[requestBufferSize];
+
+                    bytesRead = networkStream.Read(requestBuffer, 0, requestBufferSize);
+                    requestClient = Encoding.UTF8.GetString(requestBuffer, 0, bytesRead);
+                    Console.WriteLine("Client Request ->" + requestClient);
+
+                    if (requestClient == "GETLIST")
+                    {
+                        ServerSendList();
+                    }
+
+                    else if (requestClient == "GETFILE")
+                    {
+                        int requestFileSize = 0;
+                        byte[] bufferRequestFile = null;
+                        string requestFile = null;
+
+                        requestFileSize = tcpClient.ReceiveBufferSize;
+                        bufferRequestFile = new byte[requestFileSize];
+
+                        bytesRead = networkStream.Read(bufferRequestFile, 0, requestFileSize);
+                        requestFile = Encoding.UTF8.GetString(bufferRequestFile, 0, bytesRead);
+
+                        Console.WriteLine("Sending File '" + requestFile + "' ...");
+                        ServerSendFile(requestFile);
+                    }
                 }
 
-                else if (requestClient == "GETFILE")
+                else
                 {
-                    int requestFileSize;
-                    byte[] bufferRequestFile;
-                    string requestFile;
-
-                    requestFileSize = tcpClient.ReceiveBufferSize;
-                    bufferRequestFile = new byte[requestFileSize];
-
-                    bytesRead = networkStream.Read(bufferRequestFile, 0, requestFileSize);
-                    requestFile = Encoding.UTF8.GetString(bufferRequestFile, 0, bytesRead);
-
-                    Console.WriteLine("Sending File '" + requestFile + "' ...");
-                    ServerSendFile(requestFile);
+                    StopServer();
+                    break;
                 }
             }
         }
@@ -81,7 +88,7 @@ namespace Server
                 Console.WriteLine("Waiting for connections ...");
             }
 
-            catch
+            catch (Exception)
             {
                 StopServer();
             }
@@ -89,14 +96,14 @@ namespace Server
 
         private static void ServerLogin()
         {
-            int bytesRead;
+            int bytesRead = 0;
 
             byte[] bytesUsernameBuffer = null;
-            int bytesUsernameBufferSize;
+            int bytesUsernameBufferSize = 0;
             string usernameClient = null;
 
             byte[] bytesPasswordBuffer = null;
-            int bytesPasswordBufferSize;
+            int bytesPasswordBufferSize = 0;
             string passwordHash = null;
 
             byte[] bytesFeedback = null;
@@ -148,7 +155,7 @@ namespace Server
                 while (mensagemFeedback != "SUCCESSFUL");
             }
 
-            catch
+            catch (Exception)
             {
                 StopServer();
             }
@@ -159,23 +166,36 @@ namespace Server
             try
             {
                 string[] fileListArray = Directory.GetFiles(fileListPath);
-                byte[] fileListBuffer;
-                string fileName;
+                byte[] fileListBuffer = null;
+                string fileList = null;
 
-                foreach (string filePath in fileListArray)
-                {
-                    fileName = Path.GetFileName(filePath) + ";";
-                    Console.WriteLine("Sending File Name '" + fileName + "' ...");
-                    fileListBuffer = Encoding.UTF8.GetBytes(fileName);
-                    networkStream.Write(fileListBuffer, 0, fileListBuffer.Length);
-                    Console.WriteLine("File Name '" + fileName + "' SENT");
-                }
+                Console.WriteLine("Sending {0} Files:", fileListArray.Count());
+                fileList = ConcatFileNames(fileListArray);
+
+                fileListBuffer = Encoding.UTF8.GetBytes(fileList);
+                networkStream.Write(fileListBuffer, 0, fileListBuffer.Length);
+                Console.WriteLine("All File Names SENT!");
             }
 
-            catch
+            catch (Exception)
             {
                 StopServer();
             }
+        }
+
+        private static string ConcatFileNames(string[] fileListArray)
+        {
+            string fileName = null;
+            string fileList = null;
+
+            foreach (string filePath in fileListArray)
+            {
+                fileName = Path.GetFileName(filePath) + ";";
+                Console.WriteLine("\t" + fileName);
+                fileList = String.Concat(fileList, fileName);
+            }
+
+            return fileList;
         }
 
         private static void ServerSendFile(string fileName)
@@ -184,9 +204,9 @@ namespace Server
             {
                 string filePath = Path.Combine(fileListPath, fileName);
 
-                using (FileStream fileStream = new FileStream(filePath, FileMode.Open))
+                using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
-                    int fileBufferSize = 20480;
+                    /*int fileBufferSize = 30720;
                     byte[] fileBuffer = new byte[fileBufferSize];
 
                     int bytesRead;
@@ -194,13 +214,15 @@ namespace Server
                     while((bytesRead = fileStream.Read(fileBuffer, 0, fileBufferSize)) > 0)
                     {
                         networkStream.Write(fileBuffer, 0, bytesRead);
-                    }
+                    }*/
+
+                    fileStream.CopyTo(networkStream);
                 }
 
-                Console.WriteLine("File '" + fileName + "' SENT");
+                Console.WriteLine("File '" + fileName + "' SENT!");
             }
 
-            catch
+            catch (Exception)
             {
                 StopServer();
             }
