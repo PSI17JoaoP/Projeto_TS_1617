@@ -55,18 +55,21 @@
             this.gbLogin.Controls.Add(this.label1);
             this.gbLogin.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.gbLogin.Location = new System.Drawing.Point(0, 0);
-            this.gbLogin.MinimumSize = new System.Drawing.Size(287, 180);
+            this.gbLogin.Margin = new System.Windows.Forms.Padding(2);
+            this.gbLogin.MinimumSize = new System.Drawing.Size(215, 146);
             this.gbLogin.Name = "gbLogin";
-            this.gbLogin.Size = new System.Drawing.Size(287, 180);
+            this.gbLogin.Padding = new System.Windows.Forms.Padding(2);
+            this.gbLogin.Size = new System.Drawing.Size(215, 146);
             this.gbLogin.TabIndex = 0;
             this.gbLogin.TabStop = false;
             this.gbLogin.Text = "Login";
             // 
             // btnLogin
             // 
-            this.btnLogin.Location = new System.Drawing.Point(194, 138);
+            this.btnLogin.Location = new System.Drawing.Point(146, 112);
+            this.btnLogin.Margin = new System.Windows.Forms.Padding(2);
             this.btnLogin.Name = "btnLogin";
-            this.btnLogin.Size = new System.Drawing.Size(81, 30);
+            this.btnLogin.Size = new System.Drawing.Size(61, 24);
             this.btnLogin.TabIndex = 4;
             this.btnLogin.Text = "Entrar";
             this.btnLogin.UseVisualStyleBackColor = true;
@@ -74,34 +77,38 @@
             // 
             // txtPassword
             // 
-            this.txtPassword.Location = new System.Drawing.Point(101, 89);
+            this.txtPassword.Location = new System.Drawing.Point(76, 72);
+            this.txtPassword.Margin = new System.Windows.Forms.Padding(2);
             this.txtPassword.Name = "txtPassword";
-            this.txtPassword.Size = new System.Drawing.Size(174, 24);
+            this.txtPassword.Size = new System.Drawing.Size(132, 21);
             this.txtPassword.TabIndex = 3;
             this.txtPassword.UseSystemPasswordChar = true;
             // 
             // txtUtilizador
             // 
-            this.txtUtilizador.Location = new System.Drawing.Point(101, 48);
+            this.txtUtilizador.Location = new System.Drawing.Point(76, 39);
+            this.txtUtilizador.Margin = new System.Windows.Forms.Padding(2);
             this.txtUtilizador.Name = "txtUtilizador";
-            this.txtUtilizador.Size = new System.Drawing.Size(174, 24);
+            this.txtUtilizador.Size = new System.Drawing.Size(132, 21);
             this.txtUtilizador.TabIndex = 2;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 92);
+            this.label2.Location = new System.Drawing.Point(9, 75);
+            this.label2.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(75, 18);
+            this.label2.Size = new System.Drawing.Size(61, 15);
             this.label2.TabIndex = 1;
             this.label2.Text = "Password";
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(12, 51);
+            this.label1.Location = new System.Drawing.Point(9, 41);
+            this.label1.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(70, 18);
+            this.label1.Size = new System.Drawing.Size(59, 15);
             this.label1.TabIndex = 0;
             this.label1.Text = "Utilizador";
             // 
@@ -112,10 +119,13 @@
             this.gbMenu.Controls.Add(this.btnObterLista);
             this.gbMenu.Controls.Add(this.label3);
             this.gbMenu.Controls.Add(this.lvLista);
-            this.gbMenu.Location = new System.Drawing.Point(0, 178);
-            this.gbMenu.MinimumSize = new System.Drawing.Size(287, 207);
+            this.gbMenu.Enabled = false;
+            this.gbMenu.Location = new System.Drawing.Point(0, 145);
+            this.gbMenu.Margin = new System.Windows.Forms.Padding(2);
+            this.gbMenu.MinimumSize = new System.Drawing.Size(215, 168);
             this.gbMenu.Name = "gbMenu";
-            this.gbMenu.Size = new System.Drawing.Size(287, 210);
+            this.gbMenu.Padding = new System.Windows.Forms.Padding(2);
+            this.gbMenu.Size = new System.Drawing.Size(215, 171);
             this.gbMenu.TabIndex = 1;
             this.gbMenu.TabStop = false;
             this.gbMenu.Text = "Menu";
@@ -123,37 +133,44 @@
             // 
             // btnAbrirFicheiro
             // 
-            this.btnAbrirFicheiro.Location = new System.Drawing.Point(149, 165);
+            this.btnAbrirFicheiro.Location = new System.Drawing.Point(112, 134);
+            this.btnAbrirFicheiro.Margin = new System.Windows.Forms.Padding(2);
             this.btnAbrirFicheiro.Name = "btnAbrirFicheiro";
-            this.btnAbrirFicheiro.Size = new System.Drawing.Size(126, 39);
+            this.btnAbrirFicheiro.Size = new System.Drawing.Size(94, 32);
             this.btnAbrirFicheiro.TabIndex = 4;
             this.btnAbrirFicheiro.Text = "Abrir ficheiro";
             this.btnAbrirFicheiro.UseVisualStyleBackColor = true;
+            this.btnAbrirFicheiro.Click += new System.EventHandler(this.btnAbrirFicheiro_Click);
             // 
             // btnObterFicheiro
             // 
-            this.btnObterFicheiro.Location = new System.Drawing.Point(15, 165);
+            this.btnObterFicheiro.Location = new System.Drawing.Point(11, 134);
+            this.btnObterFicheiro.Margin = new System.Windows.Forms.Padding(2);
             this.btnObterFicheiro.Name = "btnObterFicheiro";
-            this.btnObterFicheiro.Size = new System.Drawing.Size(126, 39);
+            this.btnObterFicheiro.Size = new System.Drawing.Size(94, 32);
             this.btnObterFicheiro.TabIndex = 3;
             this.btnObterFicheiro.Text = "Obter ficheiro";
             this.btnObterFicheiro.UseVisualStyleBackColor = true;
+            this.btnObterFicheiro.Click += new System.EventHandler(this.btnObterFicheiro_Click);
             // 
             // btnObterLista
             // 
-            this.btnObterLista.Location = new System.Drawing.Point(182, 21);
+            this.btnObterLista.Location = new System.Drawing.Point(136, 17);
+            this.btnObterLista.Margin = new System.Windows.Forms.Padding(2);
             this.btnObterLista.Name = "btnObterLista";
-            this.btnObterLista.Size = new System.Drawing.Size(93, 36);
+            this.btnObterLista.Size = new System.Drawing.Size(70, 29);
             this.btnObterLista.TabIndex = 2;
             this.btnObterLista.Text = "Obter lista";
             this.btnObterLista.UseVisualStyleBackColor = true;
+            this.btnObterLista.Click += new System.EventHandler(this.btnObterLista_Click);
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(12, 40);
+            this.label3.Location = new System.Drawing.Point(9, 32);
+            this.label3.Margin = new System.Windows.Forms.Padding(2, 0, 2, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(115, 17);
+            this.label3.Size = new System.Drawing.Size(86, 13);
             this.label3.TabIndex = 1;
             this.label3.Text = "Lista de ficheiros";
             // 
@@ -163,9 +180,10 @@
             this.columnHeader1,
             this.columnHeader2});
             this.lvLista.Font = new System.Drawing.Font("Microsoft Sans Serif", 7.2F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.lvLista.Location = new System.Drawing.Point(15, 63);
+            this.lvLista.Location = new System.Drawing.Point(11, 51);
+            this.lvLista.Margin = new System.Windows.Forms.Padding(2);
             this.lvLista.Name = "lvLista";
-            this.lvLista.Size = new System.Drawing.Size(260, 96);
+            this.lvLista.Size = new System.Drawing.Size(196, 79);
             this.lvLista.TabIndex = 0;
             this.lvLista.UseCompatibleStateImageBehavior = false;
             this.lvLista.View = System.Windows.Forms.View.Details;
@@ -182,20 +200,23 @@
             // 
             // Form1
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-            this.ClientSize = new System.Drawing.Size(287, 386);
+            this.ClientSize = new System.Drawing.Size(217, 314);
             this.Controls.Add(this.gbMenu);
             this.Controls.Add(this.gbLogin);
-            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.MaximizeBox = false;
-            this.MaximumSize = new System.Drawing.Size(305, 433);
-            this.MinimumSize = new System.Drawing.Size(305, 229);
+            this.MaximumSize = new System.Drawing.Size(233, 358);
+            this.MinimumSize = new System.Drawing.Size(233, 192);
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Cliente";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.gbLogin.ResumeLayout(false);
             this.gbLogin.PerformLayout();
             this.gbMenu.ResumeLayout(false);

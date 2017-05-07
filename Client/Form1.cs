@@ -2,8 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,99 +17,174 @@ namespace Projeto
 {
     public partial class Form1 : Form
     {
+        private const int port = 9090;
+
+        private TcpClient tcpClient = null;
+        private NetworkStream networkStream = null;
+        private IPEndPoint endPoint = null;
+
         public Form1()
         {
             InitializeComponent();
-
-            ServiceTCPSockets.StartClient();
         }
 
-        private RSACryptoServiceProvider rsa;
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            tcpClient = new TcpClient();
+            endPoint = new IPEndPoint(IPAddress.Loopback, port);
+
+            tcpClient.Connect(endPoint);
+            networkStream = tcpClient.GetStream();
+        }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-            if (txtUtilizador.Text.Length > 0 && txtPassword.Text.Length > 0)
+            try
             {
-                ServiceTCPSockets.StartConnection();
+                int bytesRead;
+                byte[] usernameLogin = Encoding.UTF8.GetBytes(txtUtilizador.Text.Trim());
+                byte[] passwordHashLogin = Encoding.UTF8.GetBytes(txtPassword.Text);
+                string serverFeedback;
 
-                ServiceTCPSockets.SendMessage("Login");
+                networkStream.Write(usernameLogin, 0, usernameLogin.Length);
 
-                string nome = txtUtilizador.Text;
-                string pass = txtPassword.Text;
+                networkStream.Write(passwordHashLogin, 0, passwordHashLogin.Length);
 
-                ServiceTCPSockets.SendMessage(nome);
-                ServiceTCPSockets.SendMessage(pass);
+                int serverFeedbackBufferSize = tcpClient.ReceiveBufferSize;
+                byte[] serverFeedbackBuffer = new byte[serverFeedbackBufferSize];
 
-                string response = ServiceTCPSockets.GetMessage();
+                bytesRead = networkStream.Read(serverFeedbackBuffer, 0, serverFeedbackBufferSize);
+                serverFeedback = Encoding.UTF8.GetString(serverFeedbackBuffer, 0, bytesRead);
 
-                if (response == "OK")
+                if (serverFeedback == "SUCCESSFUL")
                 {
-                    gbLogin.Enabled = false;
+                    gbMenu.Enabled = true;
                     gbMenu.Visible = true;
                 }
-                else
+
+                else if (serverFeedback == "FAILED")
                 {
-                    MessageBox.Show("Nome de utilizador ou palavra passe incorretos", "Login");
+                    MessageBox.Show("O username e password introduzidos são incorretos", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            else
+
+            catch
             {
-                MessageBox.Show("Preencha ambos os campos", "Atenção");
+                StopConnection();
             }
-            
         }
 
-        #region RegionHash
-
-        private byte[] ObterHash(string texto)
+        private void btnObterLista_Click(object sender, EventArgs e)
         {
-            byte[] dados;
-            byte[] hash;
-
-            using (SHA512 sha512 = SHA512.Create())
+            try
             {
-                dados = Encoding.UTF8.GetBytes(texto);
-                hash = sha512.ComputeHash(dados);
-            }
+                byte[] requestList = Encoding.UTF8.GetBytes("GETLIST");
+                networkStream.Write(requestList, 0, requestList.Length);
 
-            return hash;
-        }
+                int fileListBufferSize;
+                byte[] fileListBuffer;
+                string fileList;
 
-        #endregion
+                int bytesRead;
 
-        #region RegionRSA
+                do
+                {
+                    fileListBufferSize = tcpClient.ReceiveBufferSize;
+                    fileListBuffer = new byte[fileListBufferSize];
 
-        private void IniciarRSA(string key)
-        {
-            rsa = new RSACryptoServiceProvider();
-            rsa.FromXmlString(key);
-        }
+                    bytesRead = networkStream.Read(fileListBuffer, 0, fileListBufferSize);
+                    fileList = Encoding.UTF8.GetString(fileListBuffer, 0, bytesRead);
+                    AddFilesToList(fileList, bytesRead);
+                }
+                while (networkStream.DataAvailable);
 
-        private bool VerAssinaturaHash(string hashS, string assinaturaS)
-        {
-            byte[] hash = Convert.FromBase64String(hashS);
-            byte[] assinatura = Convert.FromBase64String(assinaturaS);
-            bool result;
-
-            result = rsa.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA512"), assinatura);
-
-            return result;
-        }
-
-        private bool VerAssinaturaDados(string dadosS, string assinaturaS)
-        {
-            byte[] dados = Encoding.UTF8.GetBytes(dadosS);
-            byte[] assinatura = Convert.FromBase64String(assinaturaS);
-            bool result;
-
-            using (SHA512 sha512 = SHA512.Create())
-            {
-                result = rsa.VerifyData(dados, sha512, assinatura);
             }
 
-            return result;
+            catch
+            {
+                StopConnection();
+            }
         }
 
-        #endregion
+        private void AddFilesToList(string fileNameList, int fileListSize)
+        {
+            string fileName;
+            int indexStart = 0;
+            int indexEnd = 0;
+
+            do
+            {
+                indexEnd = fileNameList.IndexOf(";", indexStart);
+                fileName = fileNameList.Substring(indexStart, indexEnd - indexStart);
+
+                indexStart = indexEnd + 1;
+
+                lvLista.Items.Add(fileName);
+            }
+            while (indexStart != fileListSize);
+
+        }
+
+        private void btnObterFicheiro_Click(object sender, EventArgs e)
+        {
+            string fileRequest = lvLista.SelectedItems[0].Text;
+
+            byte[] requestList = Encoding.UTF8.GetBytes("GETFILE");
+            networkStream.Write(requestList, 0, requestList.Length);
+
+            byte[] fileRequested = Encoding.UTF8.GetBytes(fileRequest);
+            networkStream.Write(fileRequested, 0, fileRequested.Length);
+
+            if (File.Exists(fileRequest))
+            {
+                File.Delete(fileRequest);
+            }
+
+            using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew))
+            {
+                byte[] fileBuffer;
+                int fileBufferSize;
+
+                int bytesRead;
+
+                do
+                {
+                    fileBufferSize = tcpClient.ReceiveBufferSize;
+                    fileBuffer = new byte[fileBufferSize];
+
+                    bytesRead = networkStream.Read(fileBuffer, 0, fileBufferSize);
+                    fileStream.Write(fileBuffer, 0, bytesRead);
+                }
+                while (networkStream.DataAvailable);
+            }
+        }
+
+        private void btnAbrirFicheiro_Click(object sender, EventArgs e)
+        {
+            string file = lvLista.SelectedItems[0].Text;
+
+            if (File.Exists(file))
+            {
+                Process.Start(file);
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            StopConnection();
+        }
+
+        private void StopConnection()
+        {
+            if (networkStream != null)
+            {
+                networkStream.Close();
+            }
+
+            if (tcpClient != null)
+            {
+                tcpClient.Close();
+            }
+        }
     }
 }
