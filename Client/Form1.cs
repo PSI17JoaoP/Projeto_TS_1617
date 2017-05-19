@@ -1,4 +1,5 @@
-﻿using System;
+﻿using EI.SI;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -23,6 +24,16 @@ namespace Projeto
         private NetworkStream networkStream = null;
         private IPEndPoint endPoint = null;
 
+        //--------------
+
+        private ServiceAssinaturasDigitais servicoAssinaturas;
+
+        //--------------
+
+        private ProtocolSI protocolSI;
+
+        //--------------
+
         public Form1()
         {
             InitializeComponent();
@@ -37,6 +48,8 @@ namespace Projeto
 
                 tcpClient.Connect(endPoint);
                 networkStream = tcpClient.GetStream();
+
+                protocolSI = new ProtocolSI();
             }
 
             catch (Exception)
@@ -49,25 +62,41 @@ namespace Projeto
         {
             try
             {
-                int bytesRead = 0;
-                byte[] usernameLogin = Encoding.UTF8.GetBytes(txtUtilizador.Text.Trim());
-                byte[] passwordHashLogin = Encoding.UTF8.GetBytes(txtPassword.Text);
+                byte[] usernameLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtUtilizador.Text.Trim());
+                byte[] passwordHashLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtPassword.Text);
+
                 string serverFeedback = null;
 
                 networkStream.Write(usernameLogin, 0, usernameLogin.Length);
 
                 networkStream.Write(passwordHashLogin, 0, passwordHashLogin.Length);
 
-                int serverFeedbackBufferSize = tcpClient.ReceiveBufferSize;
-                byte[] serverFeedbackBuffer = new byte[serverFeedbackBufferSize];
+                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                serverFeedback = protocolSI.GetStringFromData();
 
-                bytesRead = networkStream.Read(serverFeedbackBuffer, 0, serverFeedbackBufferSize);
-                serverFeedback = Encoding.UTF8.GetString(serverFeedbackBuffer, 0, bytesRead);
 
                 if (serverFeedback == "SUCCESSFUL")
                 {
                     gbMenu.Enabled = true;
                     gbMenu.Visible = true;
+                    gbLogin.Enabled = false;
+
+                    //------------------
+                    string key = null;
+
+                    networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+
+                    if (protocolSI.GetCmdType() == ProtocolSICmdType.PUBLIC_KEY)
+                    {
+                        key = protocolSI.GetStringFromData();
+
+                        servicoAssinaturas = new ServiceAssinaturasDigitais(key);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Erro ao receber a chave pública", "Atenção", MessageBoxButtons.OK);
+                    }
+                    //------------------
                 }
 
                 else if (serverFeedback == "FAILED")
@@ -78,6 +107,7 @@ namespace Projeto
 
             catch (Exception)
             {
+                //throw;
                 StopConnection();
             }
         }
@@ -86,36 +116,44 @@ namespace Projeto
         {
             try
             {
-                byte[] requestList = Encoding.UTF8.GetBytes("GETLIST");
+                byte[] requestList = protocolSI.Make(ProtocolSICmdType.DATA, "GETLIST");
                 networkStream.Write(requestList, 0, requestList.Length);
 
-                int fileListBufferSize = 0;
-                byte[] fileListBuffer = null;
                 string fileList = null;
 
-                int bytesRead = 0;
+                //--------------------------
+                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                byte[] assinaturabuffer = protocolSI.GetData();
+                string assinatura = Convert.ToBase64String(assinaturabuffer, 0, assinaturabuffer.Length);
+                //--------------------------
+                
+                
+                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                fileList = protocolSI.GetStringFromData();
+                
 
-                do
+                if (servicoAssinaturas.VerAssinaturaDados(fileList, assinatura))
                 {
-                    fileListBufferSize = tcpClient.ReceiveBufferSize;
-                    fileListBuffer = new byte[fileListBufferSize];
-
-                    bytesRead = networkStream.Read(fileListBuffer, 0, fileListBufferSize);
-                    fileList = Encoding.UTF8.GetString(fileListBuffer, 0, bytesRead);
+                    RefreshFileList(fileList, fileList.Length);
                 }
-                while (networkStream.DataAvailable);
+                else
+                {
+                    MessageBox.Show("Dados corrompidos. Descartados", "Erro");
+                }
 
-                RefreshFileList(fileList, bytesRead);
+                
             }
 
             catch (Exception)
             {
+                //throw;
                 StopConnection();
             }
         }
 
         private void RefreshFileList(string fileNameList, int fileNameListSize)
         {
+            ListViewItem item;
             string fileName = null;
             int indexStart = 0;
             int indexEnd = 0;
@@ -129,7 +167,9 @@ namespace Projeto
 
                 indexStart = indexEnd + 1;
 
-                lvLista.Items.Add(fileName);
+                item = new ListViewItem(fileName);
+                item.SubItems.Add("Não");
+                lvLista.Items.Add(item);
             }
             while (indexStart != fileNameListSize);
 
@@ -141,20 +181,46 @@ namespace Projeto
             {
                 string fileRequest = lvLista.SelectedItems[0].Text;
 
-                byte[] requestList = Encoding.UTF8.GetBytes("GETFILE");
+                byte[] requestList = protocolSI.Make(ProtocolSICmdType.DATA, "GETFILE");
                 networkStream.Write(requestList, 0, requestList.Length);
 
-                byte[] fileRequested = Encoding.UTF8.GetBytes(fileRequest);
+                byte[] fileRequested = protocolSI.Make(ProtocolSICmdType.DATA, fileRequest);
                 networkStream.Write(fileRequested, 0, fileRequested.Length);
+
+
 
                 if (File.Exists(fileRequest))
                 {
                     File.Delete(fileRequest);
                 }
 
-                using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.Write))
+
+                //----------------------------------------
+                /*int nBytesRead = 0;
+                
+                //1
+                int hashSize = tcpClient.ReceiveBufferSize;
+                byte[] hash = new byte[hashSize];
+                nBytesRead = networkStream.Read(hash, 0, hashSize);
+                string hashString = Convert.ToBase64String(hash, 0, nBytesRead);
+               
+                //2
+                int assinaturaBufferSize = tcpClient.ReceiveBufferSize;
+                byte[] assinaturaBuffer = new byte[assinaturaBufferSize];
+                nBytesRead = networkStream.Read(assinaturaBuffer, 0, assinaturaBufferSize);
+                string assinatura = Convert.ToBase64String(assinaturaBuffer, 0, nBytesRead);
+
+                //
+
+                if (servicoAssinaturas.VerAssinaturaHash(hashString, assinatura))
                 {
-                    byte[] fileBuffer = null;
+                    byte[] file = null;
+                    byte[] hashFile = null;
+                */
+                    using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.Write))
+                    {
+                    //Isto funciona
+                    /*byte[] fileBuffer = null;
                     int fileBufferSize = 0;
 
                     int bytesRead = 0;
@@ -164,16 +230,70 @@ namespace Projeto
                         fileBufferSize = tcpClient.ReceiveBufferSize;
                         fileBuffer = new byte[fileBufferSize];
 
-                        bytesRead = networkStream.Read(fileBuffer, 0, fileBufferSize);
+                        bytesRead = networkStream.Read(fileBuffer, 0, fileBuffer.Length);
                         fileStream.Write(fileBuffer, 0, bytesRead);
+                        Debug.Print("Valor: " + bytesRead);
                     }
-                    while (networkStream.DataAvailable);
+                    while (networkStream.DataAvailable);*/
+
+                        byte[] imageBuffer = null;
+                        
+                        do
+                        {
+                            networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+
+                            if (protocolSI.GetCmdType() == ProtocolSICmdType.DATA)
+                            {
+                                imageBuffer = protocolSI.GetData();
+                                fileStream.Write(imageBuffer, 0, imageBuffer.Length);
+                                Debug.Print("Valor: " + imageBuffer.Length);
+                            }
+                            else
+                            {
+                                break;
+                            }
+                        } while (networkStream.DataAvailable);
+                    
+
+                    //---------------------------------------------
+                    /*file = new byte[fileStream.Length];
+                    fileStream.Read(file, 0, file.Length);
+                    hashFile = servicoAssinaturas.HashImagem(file);
+                    */
+                    }
+
+                   lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
+                   btnAbrirFicheiro.Enabled = true;
+
+
+                //----------------------------------------
+                /*
+                if (byte.Equals(hash, hashFile))
+                {
+                    lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
+                    btnAbrirFicheiro.Enabled = true;
                 }
+                else
+                {
+                    MessageBox.Show("Dados corrompidos. Descartados", "Erro");
+                }*/
+
+                //----------------------------------------
+
+                /*   
+                }
+                else
+                {
+                    MessageBox.Show("Dados corrompidos. Descartados", "Erro");
+                }*/
+
+
             }
 
             catch (Exception)
             {
-                StopConnection();
+                //StopConnection();
+                throw;
             }
         }
 
@@ -189,6 +309,9 @@ namespace Projeto
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            byte[] lastMessage = protocolSI.Make(ProtocolSICmdType.DATA, "SHUTDOWN");
+            networkStream.Write(lastMessage, 0, lastMessage.Length);
+
             StopConnection();
         }
 
@@ -202,6 +325,28 @@ namespace Projeto
             if (tcpClient != null)
             {
                 tcpClient.Close();
+            }
+        }
+
+        private void lvLista_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (lvLista.SelectedItems.Count > 0)
+            {
+                btnObterFicheiro.Enabled = true;
+
+                if (lvLista.SelectedItems[0].SubItems[1].Text == "Sim")
+                {
+                    btnAbrirFicheiro.Enabled = true;
+                }
+                else
+                {
+                    btnAbrirFicheiro.Enabled = false;
+                }
+            }
+            else
+            {
+                btnObterFicheiro.Enabled = false;
+                btnAbrirFicheiro.Enabled = false;
             }
         }
     }

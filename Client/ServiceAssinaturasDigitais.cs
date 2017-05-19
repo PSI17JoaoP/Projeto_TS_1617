@@ -17,7 +17,7 @@ namespace Projeto
             rsaVerify.FromXmlString(publicKey);
         }
 
-        private byte[] ObterHash(string texto)
+        public byte[] ObterHash(string texto)
         {
             byte[] dados;
             byte[] hash;
@@ -31,7 +31,19 @@ namespace Projeto
             return hash;
         }
 
-        private bool VerAssinaturaHash(string hashServer, string assinaturaServer)
+        public byte[] HashImagem(byte[] file)
+        {
+            byte[] hashDados = null;
+
+            using (SHA512 sha512Algorithm = SHA512.Create())
+            {
+                hashDados = sha512Algorithm.ComputeHash(file);
+            }
+
+            return hashDados;
+        }
+
+        public bool VerAssinaturaHash(string hashServer, string assinaturaServer)
         {
             byte[] hash = Convert.FromBase64String(hashServer);
             byte[] assinatura = Convert.FromBase64String(assinaturaServer);
@@ -42,7 +54,7 @@ namespace Projeto
             return result;
         }
 
-        private bool VerAssinaturaDados(string dadosServer, string assinaturaServer)
+        public bool VerAssinaturaDados(string dadosServer, string assinaturaServer)
         {
             byte[] dados = Encoding.UTF8.GetBytes(dadosServer);
             byte[] assinatura = Convert.FromBase64String(assinaturaServer);
