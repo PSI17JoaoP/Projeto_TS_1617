@@ -79,10 +79,6 @@ namespace Projeto
 
                     if (serverFeedback == "SUCCESSFUL")
                     {
-                        gbMenu.Enabled = true;
-                        gbMenu.Visible = true;
-                        gbLogin.Enabled = false;
-
                         //------------------
                         string key = null;
 
@@ -100,6 +96,10 @@ namespace Projeto
                             MessageBox.Show("Erro ao receber a chave pública", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
                         //------------------
+
+                        gbMenu.Enabled = true;
+                        gbMenu.Visible = true;
+                        gbLogin.Enabled = false;
                     }
 
                     else if (serverFeedback == "FAILED")
