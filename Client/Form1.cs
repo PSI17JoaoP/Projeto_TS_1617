@@ -187,8 +187,6 @@ namespace Projeto
                 byte[] fileRequested = protocolSI.Make(ProtocolSICmdType.DATA, fileRequest);
                 networkStream.Write(fileRequested, 0, fileRequested.Length);
 
-
-
                 if (File.Exists(fileRequest))
                 {
                     File.Delete(fileRequest);
@@ -217,8 +215,8 @@ namespace Projeto
                     byte[] file = null;
                     byte[] hashFile = null;
                 */
-                    using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.Write))
-                    {
+                using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.Write))
+                {
                     //Isto funciona
                     /*byte[] fileBuffer = null;
                     int fileBufferSize = 0;
@@ -236,34 +234,41 @@ namespace Projeto
                     }
                     while (networkStream.DataAvailable);*/
 
-                        byte[] imageBuffer = null;
-                        
-                        do
-                        {
-                            networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                    ProtocolSICmdType protocolTipoResposta;
+                    int bytesRead;
 
-                            if (protocolSI.GetCmdType() == ProtocolSICmdType.DATA)
-                            {
-                                imageBuffer = protocolSI.GetData();
-                                fileStream.Write(imageBuffer, 0, imageBuffer.Length);
-                                Debug.Print("Valor: " + imageBuffer.Length);
-                            }
-                            else
-                            {
-                                break;
-                            }
-                        } while (networkStream.DataAvailable);
-                    
+                    byte[] acknowledge;
+                    byte[] imageBuffer;
+
+                    do
+                    {
+                        bytesRead = networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                        
+                        protocolTipoResposta = protocolSI.GetCmdType();
+
+                        if (protocolTipoResposta == ProtocolSICmdType.DATA)
+                        {
+                            imageBuffer = protocolSI.GetData();
+                            fileStream.Write(imageBuffer, 0, imageBuffer.Length);
+                            Debug.Print("Received " + imageBuffer.Length + " + " + (bytesRead - imageBuffer.Length) + " Bytes");
+
+                            acknowledge = protocolSI.Make(ProtocolSICmdType.ACK);
+                            networkStream.Write(acknowledge, 0, acknowledge.Length);
+                            Debug.Print("Acknowlegment (ACK) Sent");
+                        }
+                    }
+                    while (networkStream.DataAvailable);
+
 
                     //---------------------------------------------
                     /*file = new byte[fileStream.Length];
                     fileStream.Read(file, 0, file.Length);
                     hashFile = servicoAssinaturas.HashImagem(file);
                     */
-                    }
+                }
 
-                   lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
-                   btnAbrirFicheiro.Enabled = true;
+                lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
+                btnAbrirFicheiro.Enabled = true;
 
 
                 //----------------------------------------
