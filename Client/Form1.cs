@@ -265,6 +265,11 @@ namespace Projeto
                             networkStream.Write(acknowledge, 0, acknowledge.Length);
                             Debug.Print("Acknowlegment (ACK) Sent");
                         }
+
+                        else if (protocolTipoResposta == ProtocolSICmdType.EOF)
+                        {
+                            Debug.Print("Reached End of File (EOF)");
+                        }
                     }
                     while (networkStream.DataAvailable);
 

@@ -248,6 +248,8 @@ namespace Server
                     int fileBufferSize = 1024;
                     byte[] fileBuffer = new byte[fileBufferSize];
 
+                    byte[] endOfFile;
+
                     ProtocolSICmdType protocaolTipoResposta;
 
                     bytesFileRead = fileStream.Read(fileBuffer, 0, fileBufferSize);
@@ -255,8 +257,10 @@ namespace Server
                     networkStream.Write(imageBuffer, 0, imageBuffer.Length);
                     Console.WriteLine("\t-> Bytes Sent: " + bytesFileRead + " + " + (imageBuffer.Length - bytesFileRead));
 
-                    while ((bytesFileRead = fileStream.Read(fileBuffer, 0, fileBufferSize)) > 0)
+                    do
                     {
+                        bytesFileRead = fileStream.Read(fileBuffer, 0, fileBufferSize);
+
                         do
                         {
                             networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
@@ -265,13 +269,24 @@ namespace Server
 
                             if (protocaolTipoResposta == ProtocolSICmdType.ACK)
                             {
-                                imageBuffer = protocolSI.Make(ProtocolSICmdType.DATA, fileBuffer, bytesFileRead);
-                                networkStream.Write(imageBuffer, 0, imageBuffer.Length);
-                                Console.WriteLine("\t-> Bytes Sent: " + bytesFileRead + " + " + (imageBuffer.Length - bytesFileRead));
+                                if (bytesFileRead > 0)
+                                {
+                                    imageBuffer = protocolSI.Make(ProtocolSICmdType.DATA, fileBuffer, bytesFileRead);
+                                    networkStream.Write(imageBuffer, 0, imageBuffer.Length);
+                                    Console.WriteLine("\t-> Bytes Sent: " + bytesFileRead + " + " + (imageBuffer.Length - bytesFileRead));
+                                }
+
+                                else
+                                {
+                                    endOfFile = protocolSI.Make(ProtocolSICmdType.EOF);
+                                    networkStream.Write(endOfFile, 0, endOfFile.Length);
+                                    Console.WriteLine("\t-> End of File (EOF) Sent");
+                                }
                             }
                         }
                         while (protocaolTipoResposta != ProtocolSICmdType.ACK);
                     }
+                    while (bytesFileRead > 0);
 
                     /*int fileBufferSize = 30720;
                     byte[] fileBuffer = new byte[fileBufferSize];
