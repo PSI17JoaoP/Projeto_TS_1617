@@ -253,7 +253,7 @@ namespace Server
                     bytesFileRead = fileStream.Read(fileBuffer, 0, fileBufferSize);
                     imageBuffer = protocolSI.Make(ProtocolSICmdType.DATA, fileBuffer, bytesFileRead);
                     networkStream.Write(imageBuffer, 0, imageBuffer.Length);
-                    Console.WriteLine("\t-Bytes Sent: " + bytesFileRead + " + " + (imageBuffer.Length - bytesFileRead));
+                    Console.WriteLine("\t-> Bytes Sent: " + bytesFileRead + " + " + (imageBuffer.Length - bytesFileRead));
 
                     while ((bytesFileRead = fileStream.Read(fileBuffer, 0, fileBufferSize)) > 0)
                     {
@@ -267,7 +267,7 @@ namespace Server
                             {
                                 imageBuffer = protocolSI.Make(ProtocolSICmdType.DATA, fileBuffer, bytesFileRead);
                                 networkStream.Write(imageBuffer, 0, imageBuffer.Length);
-                                Console.WriteLine("\t-Bytes Sent: " + bytesFileRead + " + " + (imageBuffer.Length - bytesFileRead));
+                                Console.WriteLine("\t-> Bytes Sent: " + bytesFileRead + " + " + (imageBuffer.Length - bytesFileRead));
                             }
                         }
                         while (protocaolTipoResposta != ProtocolSICmdType.ACK);

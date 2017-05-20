@@ -62,46 +62,55 @@ namespace Projeto
         {
             try
             {
-                byte[] usernameLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtUtilizador.Text.Trim());
-                byte[] passwordHashLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtPassword.Text);
-
-                string serverFeedback = null;
-
-                networkStream.Write(usernameLogin, 0, usernameLogin.Length);
-
-                networkStream.Write(passwordHashLogin, 0, passwordHashLogin.Length);
-
-                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
-                serverFeedback = protocolSI.GetStringFromData();
-
-
-                if (serverFeedback == "SUCCESSFUL")
+                if (txtUtilizador.Text.Length > 0 && txtPassword.Text.Length > 0)
                 {
-                    gbMenu.Enabled = true;
-                    gbMenu.Visible = true;
-                    gbLogin.Enabled = false;
+                    byte[] usernameLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtUtilizador.Text.Trim());
+                    byte[] passwordHashLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtPassword.Text);
 
-                    //------------------
-                    string key = null;
+                    string serverFeedback = null;
+
+                    networkStream.Write(usernameLogin, 0, usernameLogin.Length);
+
+                    networkStream.Write(passwordHashLogin, 0, passwordHashLogin.Length);
 
                     networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                    serverFeedback = protocolSI.GetStringFromData();
 
-                    if (protocolSI.GetCmdType() == ProtocolSICmdType.PUBLIC_KEY)
-                    {
-                        key = protocolSI.GetStringFromData();
 
-                        servicoAssinaturas = new ServiceAssinaturasDigitais(key);
-                    }
-                    else
+                    if (serverFeedback == "SUCCESSFUL")
                     {
-                        MessageBox.Show("Erro ao receber a chave pública", "Atenção", MessageBoxButtons.OK);
+                        gbMenu.Enabled = true;
+                        gbMenu.Visible = true;
+                        gbLogin.Enabled = false;
+
+                        //------------------
+                        string key = null;
+
+                        networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+
+                        if (protocolSI.GetCmdType() == ProtocolSICmdType.PUBLIC_KEY)
+                        {
+                            key = protocolSI.GetStringFromData();
+
+                            servicoAssinaturas = new ServiceAssinaturasDigitais(key);
+                        }
+
+                        else
+                        {
+                            MessageBox.Show("Erro ao receber a chave pública", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        //------------------
                     }
-                    //------------------
+
+                    else if (serverFeedback == "FAILED")
+                    {
+                        MessageBox.Show("O username e password introduzidos são incorretos", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
 
-                else if (serverFeedback == "FAILED")
+                else
                 {
-                    MessageBox.Show("O username e password introduzidos são incorretos", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show("Preencha todos os campos para efeutuar login", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
 
