@@ -218,7 +218,7 @@ namespace Projeto
                 //----------
 
 
-                using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.Write))
+                using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.ReadWrite))
                 {
                     ProtocolSICmdType protocolTipoResposta;
                     int bytesRead;
@@ -251,27 +251,27 @@ namespace Projeto
                     while (networkStream.DataAvailable);
                     
                     // NOVO
-                    /*
+                    
                     byte[] file = new byte[fileStream.Length];
                     fileStream.Seek(0, SeekOrigin.Begin);
                     fileStream.Read(file, 0, file.Length);
                     finalImageHash = servicoAssinaturas.HashImagem(file);
-                    */
+                    
                     //----------
                 }
 
                 //NOVO
                 if (servicoAssinaturas.VerAssinaturaHash(imageHash, assinatura))
                 {
-                    /*if (imageHash.SequenceEqual(finalImageHash))
-                    {*/
+                    if (imageHash.SequenceEqual(finalImageHash))
+                    {
                         lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
                         btnAbrirFicheiro.Enabled = true;
-                    /*}
+                    }
                     else
                     {
                         MessageBox.Show("Dados corrompidos. Descartados", "Erro");
-                    }*/
+                    }
                 }
                 else
                 {
