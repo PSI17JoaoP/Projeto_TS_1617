@@ -192,48 +192,25 @@ namespace Projeto
                     File.Delete(fileRequest);
                 }
 
-
-                //----------------------------------------
-                /*int nBytesRead = 0;
+                //NOVO
                 
-                //1
-                int hashSize = tcpClient.ReceiveBufferSize;
-                byte[] hash = new byte[hashSize];
-                nBytesRead = networkStream.Read(hash, 0, hashSize);
-                string hashString = Convert.ToBase64String(hash, 0, nBytesRead);
-               
-                //2
-                int assinaturaBufferSize = tcpClient.ReceiveBufferSize;
-                byte[] assinaturaBuffer = new byte[assinaturaBufferSize];
-                nBytesRead = networkStream.Read(assinaturaBuffer, 0, assinaturaBufferSize);
-                string assinatura = Convert.ToBase64String(assinaturaBuffer, 0, nBytesRead);
+                string assinatura = null;
+                byte[] assinaturaBytes = null;
+                byte[] imageHash = null;
+                byte[] finalImageHash = null;
 
-                //
+                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                assinaturaBytes = protocolSI.GetData();
+                assinatura = Convert.ToBase64String(assinaturaBytes, 0, assinaturaBytes.Length);
 
-                if (servicoAssinaturas.VerAssinaturaHash(hashString, assinatura))
-                {
-                    byte[] file = null;
-                    byte[] hashFile = null;
-                */
+                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                imageHash = protocolSI.GetData();
+                
+                //----------
+
+
                 using (FileStream fileStream = new FileStream(fileRequest, FileMode.CreateNew, FileAccess.Write))
                 {
-                    //Isto funciona
-                    /*byte[] fileBuffer = null;
-                    int fileBufferSize = 0;
-
-                    int bytesRead = 0;
-
-                    do
-                    {
-                        fileBufferSize = tcpClient.ReceiveBufferSize;
-                        fileBuffer = new byte[fileBufferSize];
-
-                        bytesRead = networkStream.Read(fileBuffer, 0, fileBuffer.Length);
-                        fileStream.Write(fileBuffer, 0, bytesRead);
-                        Debug.Print("Valor: " + bytesRead);
-                    }
-                    while (networkStream.DataAvailable);*/
-
                     ProtocolSICmdType protocolTipoResposta;
                     int bytesRead;
 
@@ -258,41 +235,32 @@ namespace Projeto
                         }
                     }
                     while (networkStream.DataAvailable);
-
-
-                    //---------------------------------------------
-                    /*file = new byte[fileStream.Length];
+                    
+                    // NOVO
+                    byte[] file = new byte[fileStream.Length];
                     fileStream.Read(file, 0, file.Length);
-                    hashFile = servicoAssinaturas.HashImagem(file);
-                    */
+                    finalImageHash = servicoAssinaturas.HashImagem(file);
+                    //----------
                 }
 
-                lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
-                btnAbrirFicheiro.Enabled = true;
-
-
-                //----------------------------------------
-                /*
-                if (byte.Equals(hash, hashFile))
+                //NOVO
+                if (servicoAssinaturas.VerAssinaturaHash(imageHash, assinatura))
                 {
-                    lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
-                    btnAbrirFicheiro.Enabled = true;
-                }
-                else
-                {
-                    MessageBox.Show("Dados corrompidos. Descartados", "Erro");
-                }*/
-
-                //----------------------------------------
-
-                /*   
+                    if (imageHash.SequenceEqual(finalImageHash))
+                    {
+                        lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
+                        btnAbrirFicheiro.Enabled = true;
+                    }
+                    else
+                    {
+                        MessageBox.Show("Dados corrompidos. Descartados", "Erro");
+                    }
                 }
                 else
                 {
                     MessageBox.Show("Dados corrompidos. Descartados", "Erro");
-                }*/
-
-
+                }
+                //----------
             }
 
             catch (Exception)

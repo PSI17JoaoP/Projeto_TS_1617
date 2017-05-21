@@ -43,9 +43,8 @@ namespace Projeto
             return hashDados;
         }
 
-        public bool VerAssinaturaHash(string hashServer, string assinaturaServer)
+        public bool VerAssinaturaHash(byte[] hash, string assinaturaServer)
         {
-            byte[] hash = Convert.FromBase64String(hashServer);
             byte[] assinatura = Convert.FromBase64String(assinaturaServer);
             bool result;
 

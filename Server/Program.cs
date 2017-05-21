@@ -235,13 +235,35 @@ namespace Server
             {
                 string filePath = Path.Combine(fileListPath, fileName);
 
-                //---------------
-                /*string assinatura = null;
-                byte[] assinaturaBytes = null;*/
-                //--------------- 
-
                 using (FileStream fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 {
+                    //NOVO
+                    
+                    string assinatura = null;
+                    byte[] assinaturaBytes = null;
+                    byte[] fullImageBuffer = new byte[fileStream.Length];
+                    byte[] imageHash = null;
+                    byte[] packetAssinatura = null;
+                    byte[] packetHash = null;
+
+
+                    fileStream.Read(fullImageBuffer, 0, fullImageBuffer.Length);
+                    fileStream.Seek(0, SeekOrigin.Begin);
+
+                    imageHash = servicoAssinaturas.HashImagem(fullImageBuffer);
+
+                    assinatura = servicoAssinaturas.AssinarHash(imageHash);
+                    assinaturaBytes = Convert.FromBase64String(assinatura);
+
+                    packetAssinatura = protocolSI.Make(ProtocolSICmdType.DIGITAL_SIGNATURE, assinaturaBytes);
+                    packetHash = protocolSI.Make(ProtocolSICmdType.DATA, imageHash);
+
+                    networkStream.Write(packetAssinatura, 0, packetAssinatura.Length); //assinatura
+                    networkStream.Write(packetHash, 0, packetHash.Length); //hash
+                    
+                    //----------
+
+
                     byte[] imageBuffer = null;
                     int bytesFileRead;
 
@@ -273,38 +295,6 @@ namespace Server
                         while (protocaolTipoResposta != ProtocolSICmdType.ACK);
                     }
 
-                    /*int fileBufferSize = 30720;
-                    byte[] fileBuffer = new byte[fileBufferSize];
-
-                    int bytesRead;
-
-                    while((bytesRead = fileStream.Read(fileBuffer, 0, fileBufferSize)) > 0)
-                    {
-                        networkStream.Write(fileBuffer, 0, bytesRead);
-                    }*/
-
-
-
-                    //----------------------------------------
-                    /*byte[] file = new byte[fileStream.Length];
-                    fileStream.Read(file, 0, file.Length);
-                    byte[] hashFile = servicoAssinaturas.HashImagem(file);
-                    string hashString = Convert.ToBase64String(hashFile);
-                    byte[] hash = Convert.FromBase64String(hashString);
-
-                    assinatura = servicoAssinaturas.AssinarHash(hash);
-                    assinaturaBytes = Convert.FromBase64String(assinatura);
-                        
-                    networkStream.Write(hash, 0, hashFile.Length); //1
-                    networkStream.Write(assinaturaBytes, 0, assinaturaBytes.Length); //2
-
-                    fileStream.Position = 0;
-                    */
-                    //----------------------------------------
-
-
-                    // Isto funciona
-                    //fileStream.CopyTo(networkStream);
                 }
 
                 Console.WriteLine("File '" + fileName + "' SENT!");
