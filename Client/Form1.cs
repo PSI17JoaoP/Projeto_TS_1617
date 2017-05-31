@@ -76,10 +76,10 @@ namespace Projeto
                     networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
                     serverFeedback = protocolSI.GetStringFromData();
 
-
                     if (serverFeedback == "SUCCESSFUL")
                     {
                         //------------------
+
                         string key = null;
 
                         networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
@@ -95,6 +95,7 @@ namespace Projeto
                         {
                             MessageBox.Show("Erro ao receber a chave pública", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Error);
                         }
+
                         //------------------
 
                         gbMenu.Enabled = true;
@@ -128,20 +129,21 @@ namespace Projeto
                 byte[] requestList = protocolSI.Make(ProtocolSICmdType.DATA, "GETLIST");
                 networkStream.Write(requestList, 0, requestList.Length);
 
-                string fileList = null;
+                byte[] fileList = null;
 
                 //--------------------------
+
                 networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
                 byte[] assinaturabuffer = protocolSI.GetData();
-                string assinatura = Convert.ToBase64String(assinaturabuffer, 0, assinaturabuffer.Length);
+
                 //--------------------------
                 
                 
                 networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
-                fileList = protocolSI.GetStringFromData();
+                fileList = protocolSI.GetData();
                 
 
-                if (servicoAssinaturas.VerAssinaturaDados(fileList, assinatura))
+                if (servicoAssinaturas.VerAssinaturaDados(fileList, assinaturabuffer))
                 {
                     RefreshFileList(fileList, fileList.Length);
                 }
@@ -160,12 +162,13 @@ namespace Projeto
             }
         }
 
-        private void RefreshFileList(string fileNameList, int fileNameListSize)
+        private void RefreshFileList(byte[] fileList, int fileNameListSize)
         {
             ListViewItem item;
             string fileName = null;
             int indexStart = 0;
             int indexEnd = 0;
+            string fileNameList = Encoding.UTF8.GetString(fileList);
 
             lvLista.Items.Clear();
 
@@ -203,17 +206,11 @@ namespace Projeto
 
                 //NOVO
                 
-                string assinatura = null;
                 byte[] assinaturaBytes = null;
-                byte[] imageHash = null;
                 byte[] finalImageHash = null;
 
                 networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
                 assinaturaBytes = protocolSI.GetData();
-                assinatura = Convert.ToBase64String(assinaturaBytes, 0, assinaturaBytes.Length);
-
-                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
-                imageHash = protocolSI.GetData();
                 
                 //----------
 
@@ -248,7 +245,7 @@ namespace Projeto
                             Debug.Print("Reached End of File (EOF)");
                         }
                     }
-                    while (networkStream.DataAvailable);
+                    while (protocolTipoResposta != ProtocolSICmdType.EOF);
                     
                     // NOVO
                     
@@ -261,22 +258,18 @@ namespace Projeto
                 }
 
                 //NOVO
-                if (servicoAssinaturas.VerAssinaturaHash(imageHash, assinatura))
+
+                if (servicoAssinaturas.VerAssinaturaHash(finalImageHash, assinaturaBytes))
                 {
-                    if (imageHash.SequenceEqual(finalImageHash))
-                    {
-                        lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
-                        btnAbrirFicheiro.Enabled = true;
-                    }
-                    else
-                    {
-                        MessageBox.Show("Dados corrompidos. Descartados", "Erro");
-                    }
+                    lvLista.SelectedItems[0].SubItems[1].Text = "Sim";
+                    btnAbrirFicheiro.Enabled = true;
                 }
+
                 else
                 {
                     MessageBox.Show("Dados corrompidos. Descartados", "Erro");
                 }
+
                 //----------
             }
 

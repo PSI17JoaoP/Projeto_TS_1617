@@ -24,19 +24,16 @@ namespace Server
             return rsaSign.ToXmlString(false);
         }
 
-        public string HashDados(string dadosBrutos)
+        public byte[] HashDados(byte[] dadosBrutos)
         {
-            string hashDadosString;
+            byte[] hashDados = null;
 
             using (SHA512 sha512Algorithm = SHA512.Create())
             {
-                byte[] dadosBytes = Encoding.UTF8.GetBytes(dadosBrutos);
-                byte[] hashDados = sha512Algorithm.ComputeHash(dadosBytes);
-
-                hashDadosString = Convert.ToBase64String(hashDados);
+                hashDados = sha512Algorithm.ComputeHash(dadosBrutos);
             }
 
-            return hashDadosString;
+            return hashDados;
         }
 
         public byte[] HashImagem(byte[] file)
@@ -51,32 +48,24 @@ namespace Server
             return hashDados;
         }
 
-        public string AssinarHash(byte[] hashBytes)
+        public byte[] AssinarHash(byte[] hashBytes)
         {
-            string assinaturaHash;
-
-            //byte[] hashBytes = Convert.FromBase64String(hashString);
             byte[] signatureBytes = rsaSign.SignHash(hashBytes, CryptoConfig.MapNameToOID("SHA512"));
 
-            assinaturaHash = Convert.ToBase64String(signatureBytes);
-
-            return assinaturaHash;
+            return signatureBytes;
         }
 
-        public string AssinarDados(string dadosBrutos)
+        public byte[] AssinarDados(string dadosBrutos)
         {
-            string assinaturaDados;
-
             byte[] dadosBytes = Encoding.UTF8.GetBytes(dadosBrutos);
             byte[] signatureDados = null;
 
             using (SHA512 sha512Algorithm = SHA512.Create())
             {
                 signatureDados = rsaSign.SignData(dadosBytes, sha512Algorithm);
-                assinaturaDados = Convert.ToBase64String(signatureDados);
             }
 
-            return assinaturaDados;
+            return signatureDados;
         }
     }
 }

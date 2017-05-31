@@ -187,7 +187,6 @@ namespace Server
                 string fileList = null;
 
                 //-----------------------
-                string assinatura = null;
                 byte[] assinaturaBytes = null;
                 //-----------------------
 
@@ -195,10 +194,8 @@ namespace Server
                 fileList = ConcatFileNames(fileListArray);
 
                 //----------------------
-                assinatura = servicoAssinaturas.AssinarDados(fileList);
-                assinaturaBytes = Convert.FromBase64String(assinatura);
+                assinaturaBytes = servicoAssinaturas.AssinarDados(fileList);
                 byte[] assinaturaPacket = protocolSI.Make(ProtocolSICmdType.DIGITAL_SIGNATURE, assinaturaBytes);
-
                 networkStream.Write(assinaturaPacket, 0, assinaturaPacket.Length);
                 //----------------------
 
@@ -239,27 +236,20 @@ namespace Server
                 {
                     //NOVO
                     
-                    string assinatura = null;
                     byte[] assinaturaBytes = null;
                     byte[] fullImageBuffer = new byte[fileStream.Length];
                     byte[] imageHash = null;
                     byte[] packetAssinatura = null;
-                    byte[] packetHash = null;
-
 
                     fileStream.Read(fullImageBuffer, 0, fullImageBuffer.Length);
                     fileStream.Seek(0, SeekOrigin.Begin);
 
                     imageHash = servicoAssinaturas.HashImagem(fullImageBuffer);
 
-                    assinatura = servicoAssinaturas.AssinarHash(imageHash);
-                    assinaturaBytes = Convert.FromBase64String(assinatura);
+                    assinaturaBytes = servicoAssinaturas.AssinarHash(imageHash);
 
                     packetAssinatura = protocolSI.Make(ProtocolSICmdType.DIGITAL_SIGNATURE, assinaturaBytes);
-                    packetHash = protocolSI.Make(ProtocolSICmdType.DATA, imageHash);
-
                     networkStream.Write(packetAssinatura, 0, packetAssinatura.Length); //assinatura
-                    networkStream.Write(packetHash, 0, packetHash.Length); //hash
                     
                     //----------
 

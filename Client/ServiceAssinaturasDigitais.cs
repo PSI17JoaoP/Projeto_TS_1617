@@ -43,25 +43,20 @@ namespace Projeto
             return hashDados;
         }
 
-        public bool VerAssinaturaHash(byte[] hash, string assinaturaServer)
+        public bool VerAssinaturaHash(byte[] hash, byte[] assinaturaServer)
         {
-            byte[] assinatura = Convert.FromBase64String(assinaturaServer);
-            bool result;
-
-            result = rsaVerify.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA512"), assinatura);
+            bool result = rsaVerify.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA512"), assinaturaServer);
 
             return result;
         }
 
-        public bool VerAssinaturaDados(string dadosServer, string assinaturaServer)
+        public bool VerAssinaturaDados(byte[] dadosServer, byte[] assinaturaServer)
         {
-            byte[] dados = Encoding.UTF8.GetBytes(dadosServer);
-            byte[] assinatura = Convert.FromBase64String(assinaturaServer);
             bool result;
 
             using (SHA512 sha512 = SHA512.Create())
             {
-                result = rsaVerify.VerifyData(dados, sha512, assinatura);
+                result = rsaVerify.VerifyData(dadosServer, sha512, assinaturaServer);
             }
 
             return result;
