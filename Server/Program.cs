@@ -1,10 +1,12 @@
 ﻿using EI.SI;
 using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,6 +28,10 @@ namespace Server
 
         //-------------
 
+        private static SqlConnection connect;
+
+        //-------------
+
         private static ServiceAssinaturasDigitais servicoAssinaturas;
 
         //-------------
@@ -39,7 +45,7 @@ namespace Server
             string requestClient = null;
 
             protocolSI = new ProtocolSI();
-            
+
             ServerStart();
             ServerLogin();
 
@@ -103,10 +109,36 @@ namespace Server
             }
         }
 
+
+        private static byte[] GenerateSaltedHash(byte[] plainText, byte[] salt)
+        {
+            using (HashAlgorithm hashAlgorithm = SHA512.Create())
+            {
+                // Declarar e inicializar buffer para o texto e salt
+                byte[] plainTextWithSaltBytes =
+                              new byte[plainText.Length + salt.Length];
+
+                // Copiar texto para buffer
+                for (int i = 0; i < plainText.Length; i++)
+                {
+                    plainTextWithSaltBytes[i] = plainText[i];
+                }
+                // Copiar salt para buffer a seguir ao texto
+                for (int i = 0; i < salt.Length; i++)
+                {
+                    plainTextWithSaltBytes[plainText.Length + i] = salt[i];
+                }
+
+                //Devolver hash do text + salt
+                return hashAlgorithm.ComputeHash(plainTextWithSaltBytes);
+            }
+        }
+
         private static void ServerLogin()
         {
+
             string usernameClient = null;
-            string passwordHash = null;
+            byte[] passwordHash = null;
 
             byte[] bytesFeedback = null;
             string mensagemFeedback = null;
@@ -135,11 +167,72 @@ namespace Server
 
 
                         networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
-                        passwordHash = protocolSI.GetStringFromData();
+                        passwordHash = protocolSI.GetData();
 
-                        Console.WriteLine("Client Password Hash Received -> " + passwordHash);
+                        Console.WriteLine("Client Password Hash Received -> " + Encoding.UTF8.GetString(passwordHash));
 
-                        if (usernameClient == userTemp && passwordHash == passTemp)
+                        //Database
+                        connect = new SqlConnection();
+                        connect.ConnectionString = String.Format(@"Data Source=(LocalDB)\MSSQLLocalDB;AttachDbFilename='C:\Users\leona\Source\Repos\Projeto_TS_1617\Server\BD.mdf';Integrated Security=True");
+
+                        connect.Open();
+
+                        String sql = "SELECT * FROM Users WHERE Username = @username";
+                        SqlCommand cmd = new SqlCommand();
+                        cmd.CommandText = sql;
+
+                        
+                        SqlParameter param = new SqlParameter("@username", usernameClient);
+
+                        cmd.Parameters.Add(param);
+                        cmd.Connection = connect;
+
+                        SqlDataReader reader = cmd.ExecuteReader();
+
+                        if (!reader.HasRows)
+                        {
+                            throw new Exception("Utilizador não existe");
+                        }
+
+                        
+                        reader.Read();
+
+                        byte[] saltedPasswordHashStored = (byte[])reader["Password"];
+
+                        byte[] saltStored = (byte[])reader["Salt"];
+
+                        byte[] saltedhash = GenerateSaltedHash(passwordHash, saltStored);
+
+                        connect.Close();
+
+                        if (saltedhash.SequenceEqual(saltedPasswordHashStored))
+                        {
+                            mensagemFeedback = "SUCCESSFUL";
+                            bytesFeedback = protocolSI.Make(ProtocolSICmdType.DATA, mensagemFeedback);
+                            networkStream.Write(bytesFeedback, 0, bytesFeedback.Length);
+
+                            Console.WriteLine("Login Attempt -> " + mensagemFeedback);
+
+
+                            //-----Envio de chave pública
+                            key = servicoAssinaturas.ObterPublicKey();
+                            keyBytes = protocolSI.Make(ProtocolSICmdType.PUBLIC_KEY, key);
+                            networkStream.Write(keyBytes, 0, keyBytes.Length);
+
+                            Console.WriteLine("Public Key Shared");
+                        }
+                        else
+                        {
+                            mensagemFeedback = "FAILED";
+                            bytesFeedback = protocolSI.Make(ProtocolSICmdType.DATA, mensagemFeedback);
+                            networkStream.Write(bytesFeedback, 0, bytesFeedback.Length);
+
+                            Console.WriteLine("Login Attempt -> " + mensagemFeedback);
+                        }
+
+                        //--------
+
+                        /*if (usernameClient == userTemp && passwordHash == passTemp)
                         {
                             mensagemFeedback = "SUCCESSFUL";
                             bytesFeedback = protocolSI.Make(ProtocolSICmdType.DATA, mensagemFeedback);
@@ -164,7 +257,7 @@ namespace Server
                             networkStream.Write(bytesFeedback, 0, bytesFeedback.Length);
 
                             Console.WriteLine("Login Attempt -> " + mensagemFeedback);
-                        }
+                        }*/
                     }
                     while (mensagemFeedback != "SUCCESSFUL");
 
@@ -174,6 +267,7 @@ namespace Server
 
             catch (Exception)
             {
+                throw;
                 StopServer();
             }
         }
