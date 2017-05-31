@@ -11,17 +11,28 @@ namespace Server
     {
         private RSACryptoServiceProvider rsaSign;
 
-        //public string publicKey;
-
         public ServiceAssinaturasDigitais()
         {
             rsaSign = new RSACryptoServiceProvider();
-            //publicKey = rsaSign.ToXmlString(false);
         }
 
         public string ObterPublicKey()
         {
             return rsaSign.ToXmlString(false);
+        }
+
+        private byte[] EncriptarDados(byte[] dadosBrutos)
+        {
+            byte[] dadosEncriptados = rsaSign.Encrypt(dadosBrutos, true);
+
+            return dadosEncriptados;
+        }
+
+        private byte[] DecriptarDados(byte[] dadosEncriptados)
+        {
+            byte[] dadosBrutos = rsaSign.Decrypt(dadosEncriptados, true);
+
+            return dadosBrutos;
         }
 
         public byte[] HashDados(byte[] dadosBrutos)
