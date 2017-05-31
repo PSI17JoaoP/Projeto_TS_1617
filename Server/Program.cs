@@ -32,7 +32,7 @@ namespace Server
 
         //-------------
 
-        private static ServiceAssinaturasDigitais servicoAssinaturas;
+        private static ServiceCriptoAssimetrica servicoAssinaturas;
 
         //-------------
 
@@ -100,7 +100,7 @@ namespace Server
                 tcpListener.Start();
                 Console.WriteLine("Waiting for connections ...");
 
-                servicoAssinaturas = new ServiceAssinaturasDigitais();
+                servicoAssinaturas = new ServiceCriptoAssimetrica();
             }
 
             catch (Exception)

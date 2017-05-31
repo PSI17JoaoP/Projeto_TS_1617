@@ -7,11 +7,11 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    public class ServiceAssinaturasDigitais
+    public class ServiceCriptoAssimetrica
     {
         private RSACryptoServiceProvider rsaSign;
 
-        public ServiceAssinaturasDigitais()
+        public ServiceCriptoAssimetrica()
         {
             rsaSign = new RSACryptoServiceProvider();
         }

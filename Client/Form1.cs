@@ -26,7 +26,7 @@ namespace Projeto
 
         //--------------
 
-        private ServiceAssinaturasDigitais servicoAssinaturas;
+        private ServiceCriptoAssimetrica servicoAssinaturas;
 
         //--------------
 
@@ -88,7 +88,7 @@ namespace Projeto
                         {
                             key = protocolSI.GetStringFromData();
 
-                            servicoAssinaturas = new ServiceAssinaturasDigitais(key);
+                            servicoAssinaturas = new ServiceCriptoAssimetrica(key);
                         }
 
                         else

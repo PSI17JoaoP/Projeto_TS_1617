@@ -7,14 +7,28 @@ using System.Threading.Tasks;
 
 namespace Projeto
 {
-    class ServiceAssinaturasDigitais
+    class ServiceCriptoAssimetrica
     {
         private RSACryptoServiceProvider rsaVerify;
 
-        public ServiceAssinaturasDigitais(string publicKey)
+        public ServiceCriptoAssimetrica(string publicKey)
         {
             rsaVerify = new RSACryptoServiceProvider();
             rsaVerify.FromXmlString(publicKey);
+        }
+
+        private byte[] EncriptarDados(byte[] dadosBrutos)
+        {
+            byte[] dadosEncriptados = rsaSign.Encrypt(dadosBrutos, true);
+
+            return dadosEncriptados;
+        }
+
+        private byte[] DecriptarDados(byte[] dadosEncriptados)
+        {
+            byte[] dadosBrutos = rsaSign.Decrypt(dadosEncriptados, true);
+
+            return dadosBrutos;
         }
 
         public byte[] ObterHash(string texto)
