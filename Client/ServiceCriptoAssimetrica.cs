@@ -9,24 +9,24 @@ namespace Projeto
 {
     class ServiceCriptoAssimetrica
     {
-        private RSACryptoServiceProvider rsaVerify;
+        private RSACryptoServiceProvider rsaClient;
 
         public ServiceCriptoAssimetrica(string publicKey)
         {
-            rsaVerify = new RSACryptoServiceProvider();
-            rsaVerify.FromXmlString(publicKey);
+            rsaClient = new RSACryptoServiceProvider();
+            rsaClient.FromXmlString(publicKey);
         }
 
         private byte[] EncriptarDados(byte[] dadosBrutos)
         {
-            byte[] dadosEncriptados = rsaSign.Encrypt(dadosBrutos, true);
+            byte[] dadosEncriptados = rsaClient.Encrypt(dadosBrutos, true);
 
             return dadosEncriptados;
         }
 
         private byte[] DecriptarDados(byte[] dadosEncriptados)
         {
-            byte[] dadosBrutos = rsaSign.Decrypt(dadosEncriptados, true);
+            byte[] dadosBrutos = rsaClient.Decrypt(dadosEncriptados, true);
 
             return dadosBrutos;
         }
@@ -59,7 +59,7 @@ namespace Projeto
 
         public bool VerAssinaturaHash(byte[] hash, byte[] assinaturaServer)
         {
-            bool result = rsaVerify.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA512"), assinaturaServer);
+            bool result = rsaClient.VerifyHash(hash, CryptoConfig.MapNameToOID("SHA512"), assinaturaServer);
 
             return result;
         }
@@ -70,7 +70,7 @@ namespace Projeto
 
             using (SHA512 sha512 = SHA512.Create())
             {
-                result = rsaVerify.VerifyData(dadosServer, sha512, assinaturaServer);
+                result = rsaClient.VerifyData(dadosServer, sha512, assinaturaServer);
             }
 
             return result;

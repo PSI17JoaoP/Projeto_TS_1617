@@ -71,13 +71,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="BD.mdf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="BD_log.ldf">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      <DependentUpon>BD.mdf</DependentUpon>
-    </Content>
     <Content Include="ProtocolSI.dll" />
   </ItemGroup>
   <ItemGroup>

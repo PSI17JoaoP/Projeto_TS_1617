@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -9,28 +10,30 @@ namespace Server
 {
     public class ServiceCriptoAssimetrica
     {
-        private RSACryptoServiceProvider rsaSign;
+        private RSACryptoServiceProvider rsaServer;
 
         public ServiceCriptoAssimetrica()
         {
-            rsaSign = new RSACryptoServiceProvider();
+            rsaServer = new RSACryptoServiceProvider();
+            File.WriteAllText("Public.txt", rsaServer.ToXmlString(false));
+            File.WriteAllText("Private.txt", rsaServer.ToXmlString(true));
         }
 
         public string ObterPublicKey()
         {
-            return rsaSign.ToXmlString(false);
+            return rsaServer.ToXmlString(false);
         }
 
         private byte[] EncriptarDados(byte[] dadosBrutos)
         {
-            byte[] dadosEncriptados = rsaSign.Encrypt(dadosBrutos, true);
+            byte[] dadosEncriptados = rsaServer.Encrypt(dadosBrutos, true);
 
             return dadosEncriptados;
         }
 
         private byte[] DecriptarDados(byte[] dadosEncriptados)
         {
-            byte[] dadosBrutos = rsaSign.Decrypt(dadosEncriptados, true);
+            byte[] dadosBrutos = rsaServer.Decrypt(dadosEncriptados, true);
 
             return dadosBrutos;
         }
@@ -61,7 +64,7 @@ namespace Server
 
         public byte[] AssinarHash(byte[] hashBytes)
         {
-            byte[] signatureBytes = rsaSign.SignHash(hashBytes, CryptoConfig.MapNameToOID("SHA512"));
+            byte[] signatureBytes = rsaServer.SignHash(hashBytes, CryptoConfig.MapNameToOID("SHA512"));
 
             return signatureBytes;
         }
@@ -73,7 +76,7 @@ namespace Server
 
             using (SHA512 sha512Algorithm = SHA512.Create())
             {
-                signatureDados = rsaSign.SignData(dadosBytes, sha512Algorithm);
+                signatureDados = rsaServer.SignData(dadosBytes, sha512Algorithm);
             }
 
             return signatureDados;
