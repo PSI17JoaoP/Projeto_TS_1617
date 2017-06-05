@@ -88,4 +88,3 @@ UpgradeLog*.htm
 # SQL Server files
 *.mdf
 *.ldf
-/Server/Properties
