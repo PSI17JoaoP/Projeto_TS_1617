@@ -17,18 +17,11 @@ namespace Projeto
             rsaClient.FromXmlString(publicKey);
         }
 
-        private byte[] EncriptarDados(byte[] dadosBrutos)
+        public byte[] EncriptarDados(byte[] dadosBrutos)
         {
             byte[] dadosEncriptados = rsaClient.Encrypt(dadosBrutos, true);
 
             return dadosEncriptados;
-        }
-
-        private byte[] DecriptarDados(byte[] dadosEncriptados)
-        {
-            byte[] dadosBrutos = rsaClient.Decrypt(dadosEncriptados, true);
-
-            return dadosBrutos;
         }
 
         public byte[] ObterHash(string texto)
