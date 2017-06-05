@@ -111,6 +111,8 @@ namespace Projeto
 
             catch (Exception)
             {
+                MessageBox.Show("Erro encontrado. A encerrar", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShutDown();
                 StopConnection();
             }
         }
@@ -177,6 +179,8 @@ namespace Projeto
             catch (Exception)
             {
                 //throw;
+                MessageBox.Show("Erro encontrado. A encerrar", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShutDown();
                 StopConnection();
             }
         }
@@ -227,8 +231,10 @@ namespace Projeto
 
             catch (Exception)
             {
-                throw;
-                //StopConnection();
+                MessageBox.Show("Erro encontrado. A encerrar", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShutDown();
+                StopConnection();
+                //throw;
             }
         }
 
@@ -361,8 +367,10 @@ namespace Projeto
 
             catch (Exception)
             {
-                //StopConnection();
-                throw;
+                MessageBox.Show("Erro encontrado. A encerrar", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ShutDown();
+                StopConnection();
+                //throw;
             }
         }
 
@@ -378,11 +386,16 @@ namespace Projeto
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            ShutDown();
+
+            StopConnection();
+        }
+
+        private void ShutDown()
+        {
             byte[] mensagemSaida = Encoding.UTF8.GetBytes("SHUTDOWN");
             byte[] lastMessage = protocolSI.Make(ProtocolSICmdType.DATA, servicoCriptoSimetrico.EncryptDados(mensagemSaida, mensagemSaida.Length));
             networkStream.Write(lastMessage, 0, lastMessage.Length);
-
-            StopConnection();
         }
 
         private void StopConnection()
