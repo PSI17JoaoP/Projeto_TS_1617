@@ -102,6 +102,7 @@ namespace Server
                     }
                     else if (requestClienteDecriptada == "SHUTDOWN")
                     {
+                        Console.WriteLine("Shutting Down ...");
                         //caso o request seja para fechar
                         StopServer();
                         //quebra o ciclo infinito, parando todos os serviços ativos.
@@ -271,7 +272,7 @@ namespace Server
                         usernameClient = Encoding.UTF8.GetString(usernameClientBytes);
 
                         //Envia mensagem cmd,a dizer que o username foi recebido.
-                        Console.WriteLine("Client Username Received -> " + usernameClient);
+                        Console.WriteLine("Client Login Attempt -> " + usernameClient);
 
                         //Vai a ler a password no buffer do protocol SI.
                         networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
