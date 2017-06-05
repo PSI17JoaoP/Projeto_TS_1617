@@ -283,7 +283,7 @@ namespace Server
 
                         passwordHash = Encoding.UTF8.GetString(passwordHashBytes);
 
-                        Console.WriteLine("Client Password Hash Received -> " + passwordHash);
+                        /*Console.WriteLine("Client Password Hash Received -> " + passwordHash);*/
                         //Escreve a dizer que recebeu a palavra-passe.
 
 
