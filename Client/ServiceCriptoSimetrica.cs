@@ -10,50 +10,61 @@ namespace Projeto
 {
     class ServiceCriptoSimetrica
     {
-        private byte[] EncryptDados(byte[] dadosBrutos, byte[] secretKey, byte[] iv)
+        private AesCryptoServiceProvider aesAlgorithm;
+
+        public ServiceCriptoSimetrica()
+        {
+            //cria logo a chave secreta 
+            //inicia uma instancia do objeto da classe.
+            aesAlgorithm = new AesCryptoServiceProvider();
+        }
+
+        public byte[] ObterSecretKey()
+        {
+            return aesAlgorithm.Key;
+        }
+
+        public byte[] ObterIV()
+        {
+            return aesAlgorithm.IV;
+        }
+
+        public byte[] EncryptDados(byte[] dadosBrutos, int tamanhoDados)
         {
             byte[] dadosEncriptados;
 
-            using (AesCryptoServiceProvider aesAlgorithm = new AesCryptoServiceProvider())
+            using (MemoryStream memoryStream = new MemoryStream())
             {
-                aesAlgorithm.Key = secretKey;
-                aesAlgorithm.IV = iv;
-
-                using (MemoryStream memoryStream = new MemoryStream())
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aesAlgorithm.CreateEncryptor(), CryptoStreamMode.Write))
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aesAlgorithm.CreateEncryptor(), CryptoStreamMode.Write))
-                    {
-                        cryptoStream.Write(dadosBrutos, 0, dadosBrutos.Length);
-                    }
-
-                    dadosEncriptados = memoryStream.ToArray();
+                    cryptoStream.Write(dadosBrutos, 0, tamanhoDados);
                 }
+
+                dadosEncriptados = memoryStream.ToArray();
             }
 
             return dadosEncriptados;
         }
 
-        private byte[] DecryptDados(byte[] dadosEncriptados, byte[] secretKey, byte[] iv)
+        public byte[] DecryptDados(byte[] dadosEncriptados)
         {
             byte[] dadosDecriptados = new byte[dadosEncriptados.Length];
+            int bytesRead;
 
-            using (AesCryptoServiceProvider aesAlgorithm = new AesCryptoServiceProvider())
+            using (MemoryStream memoryStream = new MemoryStream(dadosEncriptados))
             {
-                aesAlgorithm.Key = secretKey;
-                aesAlgorithm.IV = iv;
-
-                int bytesRead;
-
-                using (MemoryStream memoryStream = new MemoryStream(dadosEncriptados))
+                using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aesAlgorithm.CreateDecryptor(), CryptoStreamMode.Read))
                 {
-                    using (CryptoStream cryptoStream = new CryptoStream(memoryStream, aesAlgorithm.CreateDecryptor(), CryptoStreamMode.Read))
-                    {
-                        bytesRead = cryptoStream.Read(dadosDecriptados, 0, dadosDecriptados.Length);
-                    }
+                    bytesRead = cryptoStream.Read(dadosDecriptados, 0, dadosDecriptados.Length);
                 }
             }
 
-            return dadosDecriptados;
+            byte[] dadosBrutos = new byte[bytesRead];
+            Array.Copy(dadosDecriptados, dadosBrutos, dadosBrutos.Length);
+            //string stringDecriptada = Encoding.UTF8.GetString(dadosDecriptados, 0, bytesRead);
+
+            //return stringDecriptada;
+            return dadosBrutos;
         }
     }
 }

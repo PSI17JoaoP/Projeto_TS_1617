@@ -28,6 +28,8 @@ namespace Projeto
 
         private ServiceCriptoAssimetrica servicoAssinaturas;
 
+        private ServiceCriptoSimetrica servicoCriptoSimetrico;
+
         //--------------
 
         private ProtocolSI protocolSI;
@@ -43,6 +45,8 @@ namespace Projeto
         {
             try
             {
+
+                //é equivalente à inicialização de objetos e preparação do cliente.
                 tcpClient = new TcpClient();
                 endPoint = new IPEndPoint(IPAddress.Loopback, port);
 
@@ -50,6 +54,59 @@ namespace Projeto
                 networkStream = tcpClient.GetStream();
 
                 protocolSI = new ProtocolSI();
+
+                servicoCriptoSimetrico = new ServiceCriptoSimetrica();
+
+                string publickey = null;
+                byte[] secretkey = null;
+                byte[] iv = null;
+
+                ProtocolSICmdType protocolTipoResposta;
+
+                networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                //lê para o buffer a key, enviada anteriormente pelo servidor.
+
+                if (protocolSI.GetCmdType() == ProtocolSICmdType.PUBLIC_KEY)
+                {
+                    //serve para determinar e verificar se o buffer é do tipo public key, se for executa.
+                    publickey = protocolSI.GetStringFromData();
+                    //obtêm a string do buffer, este sendo um array de bytes.
+                    //Receção e envio da public key, do cliente para o servidor e receber do servidor
+                    Debug.Print("Received Public Key");
+
+                    servicoAssinaturas = new ServiceCriptoAssimetrica(publickey);
+                    //Vai instanciar um servico de criptografia assimetrica, com a public key do servidor.
+                    //O construtor desta classe necessita da public key, por isso é que só foi inicializado agora.
+  
+                    secretkey = servicoCriptoSimetrico.ObterSecretKey();
+                    byte[] secretkeyEncriptada = protocolSI.Make(ProtocolSICmdType.SECRET_KEY, servicoAssinaturas.EncriptarDados(secretkey));
+                    networkStream.Write(secretkeyEncriptada, 0, secretkeyEncriptada.Length);
+                    Debug.Print("Secret Key Sent");
+
+                    do
+                    {
+                        networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+
+                        protocolTipoResposta = protocolSI.GetCmdType();
+
+                        if (protocolTipoResposta == ProtocolSICmdType.ACK)
+                        {
+                            iv = servicoCriptoSimetrico.ObterIV();
+                            byte[] ivEncriptado = protocolSI.Make(ProtocolSICmdType.IV, servicoAssinaturas.EncriptarDados(iv));
+                            networkStream.Write(ivEncriptado, 0, ivEncriptado.Length);
+                            Debug.Print("IV Sent");
+                        }
+                    }
+                    while (protocolTipoResposta != ProtocolSICmdType.ACK);
+
+                    //encriptar a chave secreta com a publica  envia la ao mesmo tempo
+                    //como o do outro lado.
+                }
+                else
+                {
+                    //caso não seja do tipo public key envia uma mensagem de erro.
+                    MessageBox.Show("Erro ao receber a chave pública", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
             catch (Exception)
@@ -64,47 +121,48 @@ namespace Projeto
             {
                 if (txtUtilizador.Text.Length > 0 && txtPassword.Text.Length > 0)
                 {
-                    byte[] usernameLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtUtilizador.Text.Trim());
-                    byte[] passwordHashLogin = protocolSI.Make(ProtocolSICmdType.DATA, txtPassword.Text);
+                    // transforma num array de bytes, recorrendo ao protocol, envia o marcador e o nome de utilizador, o mesmo para pass
+                    byte[] usernameLogin = Encoding.UTF8.GetBytes(txtUtilizador.Text.Trim());
+                    byte[] passwordHashLogin = Encoding.UTF8.GetBytes(txtPassword.Text);
+                    //saca os bytes do texto.
 
-                    string serverFeedback = null;
+                    byte[] serverFeedback = null;
 
-                    networkStream.Write(usernameLogin, 0, usernameLogin.Length);
+                    //utilizar encriptação assimetrica;
 
-                    networkStream.Write(passwordHashLogin, 0, passwordHashLogin.Length);
+                    //Escreve na network stream (forma de comunicarem, imposta pela comunicação, tcp, é onde se trata de enviar dados receber dados.
 
+                    //vai para a parte do program, e faz um read() no lado do servidor.
+
+                    byte[] usernameEncriptado = protocolSI.Make(ProtocolSICmdType.DATA, servicoCriptoSimetrico.EncryptDados(usernameLogin, usernameLogin.Length));
+                    byte[] passwordHashEncriptada = protocolSI.Make(ProtocolSICmdType.DATA, servicoCriptoSimetrico.EncryptDados(passwordHashLogin, passwordHashLogin.Length));
+
+                    networkStream.Write(usernameEncriptado, 0, usernameEncriptado.Length);
+
+                    //faz exatamente a mesma parte de cima e vai servidor. (((Utilizar a Hash)))
+                    networkStream.Write(passwordHashEncriptada, 0, passwordHashEncriptada.Length);
+
+                    //fica à escuta para receber a mensagem de sucesso.
+                    //ack --> sao acknoledgments, quando recebe alguma coisa tem de dizer que recebeu, é o feedback
                     networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
-                    serverFeedback = protocolSI.GetStringFromData();
+                    //vai por a msg no buffer, que veio do lado do servidor.
+                    serverFeedback = protocolSI.GetData();
+                    //tranforma em string a resposta
 
-                    if (serverFeedback == "SUCCESSFUL")
+                    byte[] serverFeedbackBytes = servicoCriptoSimetrico.DecryptDados(serverFeedback);
+                    string serverFeedbackString = Encoding.UTF8.GetString(serverFeedbackBytes);
+
+                    if (serverFeedbackString == "SUCCESSFUL")
                     {
-                        //------------------
-
-                        string key = null;
-
-                        networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
-
-                        if (protocolSI.GetCmdType() == ProtocolSICmdType.PUBLIC_KEY)
-                        {
-                            key = protocolSI.GetStringFromData();
-
-                            servicoAssinaturas = new ServiceCriptoAssimetrica(key);
-                        }
-
-                        else
-                        {
-                            MessageBox.Show("Erro ao receber a chave pública", "Atenção", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        }
-
-                        //------------------
-
                         gbMenu.Enabled = true;
                         gbMenu.Visible = true;
                         gbLogin.Enabled = false;
+                        //ativa os formulários para uso.
                     }
 
-                    else if (serverFeedback == "FAILED")
+                    else if (serverFeedbackString == "FAILED")
                     {
+                        //caso o login não seja bem sucedido, envia uma mensagem de erro.
                         MessageBox.Show("O username e password introduzidos são incorretos", "Erro", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
@@ -115,6 +173,7 @@ namespace Projeto
                 }
             }
 
+            //caso tenha alguma excepção.
             catch (Exception)
             {
                 //throw;
@@ -126,39 +185,50 @@ namespace Projeto
         {
             try
             {
-                byte[] requestList = protocolSI.Make(ProtocolSICmdType.DATA, "GETLIST");
+                byte[] requestListBytes = Encoding.UTF8.GetBytes("GETLIST");
+                byte[] requestList = protocolSI.Make(ProtocolSICmdType.DATA, servicoCriptoSimetrico.EncryptDados(requestListBytes, requestListBytes.Length));
                 networkStream.Write(requestList, 0, requestList.Length);
 
                 byte[] fileList = null;
+                string fileListDecriptadaString = null;
+                byte[] fileListDecriptadaBytes = null;
 
                 //--------------------------
 
                 networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                //recebe num buffer as assinaturas
                 byte[] assinaturabuffer = protocolSI.GetData();
 
+                //obtem a assinatura num array de bytes.
+
                 //--------------------------
                 
-                
                 networkStream.Read(protocolSI.Buffer, 0, protocolSI.Buffer.Length);
+                //recebe num buffer, a lista de ficheiros
                 fileList = protocolSI.GetData();
-                
+                //coloca no array de byte a lista de ficheiros.
 
-                if (servicoAssinaturas.VerAssinaturaDados(fileList, assinaturabuffer))
+                fileListDecriptadaBytes = servicoCriptoSimetrico.DecryptDados(fileList);
+
+                fileListDecriptadaString = Encoding.UTF8.GetString(fileListDecriptadaBytes);
+
+                //envia os dados e vai verificar a assinaturas dos dados
+                if (servicoAssinaturas.VerAssinaturaDados(fileListDecriptadaBytes, assinaturabuffer))
                 {
-                    RefreshFileList(fileList, fileList.Length);
+                    //se os dados não foram alterados, mostra os ficheiros da lista.
+                    RefreshFileList(fileListDecriptadaBytes, fileListDecriptadaBytes.Length);
                 }
                 else
                 {
+                    //se são diferentes mostra que os dados foram corrompidos.
                     MessageBox.Show("Dados corrompidos. Descartados", "Erro");
-                }
-
-                
+                }  
             }
 
             catch (Exception)
             {
-                //throw;
-                StopConnection();
+                throw;
+                //StopConnection();
             }
         }
 
@@ -191,12 +261,19 @@ namespace Projeto
         {
             try
             {
+                //vai buscar o nome do ficheiro que quer obter e para mandar para o servidor para pedir a imagem.
                 string fileRequest = lvLista.SelectedItems[0].Text;
 
-                byte[] requestList = protocolSI.Make(ProtocolSICmdType.DATA, "GETFILE");
+                //Transforma a string num array de bytes, do tipo dado, e a ação a executar.
+                byte[] requestListBytes = Encoding.UTF8.GetBytes("GETFILE");
+                byte[] requestList = protocolSI.Make(ProtocolSICmdType.DATA, servicoCriptoSimetrico.EncryptDados(requestListBytes, requestListBytes.Length));
+                //escreve na network stream para o servidor.
                 networkStream.Write(requestList, 0, requestList.Length);
 
-                byte[] fileRequested = protocolSI.Make(ProtocolSICmdType.DATA, fileRequest);
+                //vai buscar um buffer do tipo data, com o pedido do ficheiro
+                byte[] fileRequestedBytes = Encoding.UTF8.GetBytes(fileRequest);
+                byte[] fileRequested = protocolSI.Make(ProtocolSICmdType.DATA, servicoCriptoSimetrico.EncryptDados(fileRequestedBytes, fileRequestedBytes.Length));
+                //escreve na networkstream o buffer com o nome do ficheiro.
                 networkStream.Write(fileRequested, 0, fileRequested.Length);
 
                 if (File.Exists(fileRequest))
@@ -231,11 +308,15 @@ namespace Projeto
 
                         if (protocolTipoResposta == ProtocolSICmdType.DATA)
                         {
+                            //Encriptado
                             imageBuffer = protocolSI.GetData();
-                            fileStream.Write(imageBuffer, 0, imageBuffer.Length);
-                            Debug.Print("Received " + imageBuffer.Length + " + " + (bytesRead - imageBuffer.Length) + " Bytes");
+                            byte[] imageBufferDecriptadoBytes = servicoCriptoSimetrico.DecryptDados(imageBuffer);
+                            string imageBufferDecriptadoString = Encoding.UTF8.GetString(imageBufferDecriptadoBytes);
+                            fileStream.Write(imageBufferDecriptadoBytes, 0, imageBufferDecriptadoBytes.Length);
+                            Debug.Print("Received " + imageBufferDecriptadoBytes.Length + " + " + (bytesRead - imageBufferDecriptadoBytes.Length) + " Bytes");
 
                             acknowledge = protocolSI.Make(ProtocolSICmdType.ACK);
+                            //byte[] acknowledgeEncriptado = servicoCriptoSimetrico.EncryptDados(acknowledge, acknowledge.Length);
                             networkStream.Write(acknowledge, 0, acknowledge.Length);
                             Debug.Print("Acknowlegment (ACK) Sent");
                         }
@@ -268,6 +349,11 @@ namespace Projeto
                 else
                 {
                     MessageBox.Show("Dados corrompidos. Descartados", "Erro");
+
+                    if(File.Exists(fileRequest))
+                    {
+                        File.Delete(fileRequest);
+                    }
                 }
 
                 //----------
@@ -292,7 +378,8 @@ namespace Projeto
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            byte[] lastMessage = protocolSI.Make(ProtocolSICmdType.DATA, "SHUTDOWN");
+            byte[] mensagemSaida = Encoding.UTF8.GetBytes("SHUTDOWN");
+            byte[] lastMessage = protocolSI.Make(ProtocolSICmdType.DATA, servicoCriptoSimetrico.EncryptDados(mensagemSaida, mensagemSaida.Length));
             networkStream.Write(lastMessage, 0, lastMessage.Length);
 
             StopConnection();

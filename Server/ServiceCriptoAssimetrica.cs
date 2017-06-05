@@ -24,14 +24,14 @@ namespace Server
             return rsaServer.ToXmlString(false);
         }
 
-        private byte[] EncriptarDados(byte[] dadosBrutos)
+        public byte[] EncriptarDados(byte[] dadosBrutos)
         {
             byte[] dadosEncriptados = rsaServer.Encrypt(dadosBrutos, true);
 
             return dadosEncriptados;
         }
 
-        private byte[] DecriptarDados(byte[] dadosEncriptados)
+        public byte[] DecriptarDados(byte[] dadosEncriptados)
         {
             byte[] dadosBrutos = rsaServer.Decrypt(dadosEncriptados, true);
 
