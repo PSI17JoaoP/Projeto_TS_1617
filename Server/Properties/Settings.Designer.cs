@@ -25,8 +25,8 @@ namespace Server.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=\"D:\\Desktop\\TESP - PSI\\S2\\PL\\" +
-            "TS\\Projeto\\Projeto_TS_1617\\Server\\BD.mdf\";Integrated Security=True")]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(LocalDB)\\MSSQLLocalDB;AttachDbFilename=C:\\Users\\leona\\Source\\Repos\\P" +
+            "rojeto_TS_1617\\Server\\BD.mdf;Integrated Security=True\r\n")]
         public string connectionString {
             get {
                 return ((string)(this["connectionString"]));

@@ -384,8 +384,8 @@ namespace Server
             //Chama o procedimento StopServer() e fecha as ligações que estiverem abertas.
             catch (Exception)
             {
-                throw;
-                //StopServer();
+                //throw;
+                StopServer();
             }
         }
 
@@ -435,8 +435,8 @@ namespace Server
 
             catch (Exception)
             {
-                throw;
-                //StopServer();
+                //throw;
+                StopServer();
             }
         }
 
@@ -562,8 +562,8 @@ namespace Server
 
             catch (Exception)
             {
-                //StopServer();
-                throw;
+                StopServer();
+                //throw;
             }
         }
 
